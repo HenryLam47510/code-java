@@ -1,0 +1,503 @@
+2026-09-14T16:14:47.358Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:14:47.362Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "projectPath": "e:\\Code java",
+  "event": "precheckCompleted",
+  "phase": "precheck",
+  "status": "succeeded",
+  "details": {
+    "components": [
+      {
+        "name": "jdk",
+        "baseVersion": "17",
+        "targetVersion": "25"
+      }
+    ]
+  }
+}}).
+2026-09-14T16:14:47.362Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:14:47.364Z [INFO] Project e:\Code java is a maven project, try to get java version from pom.xml
+2026-09-14T16:14:47.365Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'precheckCompleted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:14:47.366Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:14:47.369Z [INFO] Project java version: 17
+2026-09-14T16:14:47.369Z [INFO] Maven project detected.
+2026-09-14T16:14:47.369Z [INFO] Build tool type: mvn
+2026-09-14T16:14:47.459Z [INFO] JDK: {
+  "name": "java",
+  "path": "C:\\Program Files\\Microsoft\\jdk-17.0.20.101-hotspot\\bin",
+  "version": "17"
+}
+2026-09-14T16:14:47.472Z [INFO] Build tool: {
+  "name": "mvn",
+  "path": "E:\\apache-maven-3.9.16\\bin",
+  "version": "",
+  "source": "PATH"
+}
+2026-09-14T16:14:47.473Z [INFO] Project config: {
+  "buildTool": {
+    "path": "E:\\apache-maven-3.9.16\\bin",
+    "name": "mvn",
+    "version": "",
+    "source": "PATH"
+  },
+  "jdk": {
+    "path": "C:\\Program Files\\Microsoft\\jdk-17.0.20.101-hotspot\\bin",
+    "name": "java",
+    "version": "17"
+  },
+  "name": "Code java",
+  "dir": "e:\\Code java"
+}
+2026-09-14T16:14:56.129Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:14:56.129Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planGenerationStarted",
+  "phase": "plan",
+  "status": "succeeded"
+}}).
+2026-09-14T16:14:56.129Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:14:56.130Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:14:56.130Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:14:56.231Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:14:56.231Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planGenerationStarted",
+  "phase": "plan",
+  "status": "succeeded"
+}}).
+2026-09-14T16:14:56.231Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:14:56.233Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'planGenerationStarted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:14:56.233Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:15:01.924Z [INFO] ---------------------prepare appmod-list-jdks----------------------
+2026-09-14T16:15:01.924Z [INFO] [Tool.prepareInvocation]({name: appmod-list-jdks, input: {
+  "sessionId": "20260914161447"
+}}).
+2026-09-14T16:15:01.924Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:15:01.925Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "List jdks"
+}}).
+2026-09-14T16:15:01.925Z [INFO] ----------------------prepared appmod-list-jdks----------------------
+2026-09-14T16:15:02.181Z [INFO] ----------------------invoke appmod-list-jdks----------------------
+2026-09-14T16:15:02.182Z [INFO] [Tool.invoke]({name: appmod-list-jdks, modelId: auto, input: {
+  "sessionId": "20260914161447"
+}}).
+2026-09-14T16:15:02.182Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:15:02.216Z [INFO] [Tool.invoke]({result: {
+  "message": "We found following jdks in your system:\n\n1. Java 17.0.20.1\n   📁 Path: C:\\Program Files\\Microsoft\\jdk-17.0.20.101-hotspot\\bin\n   🏷️ Source: PATH\n\n2. Java 26\n   📁 Path: C:\\Program Files\\Java\\jdk-26\\bin\n   🏷️ Source: others\n\n3. Java 26.0.2.1\n   📁 Path: C:\\Program Files\\Java\\jdk-26.0.2.1\\bin\n   🏷️ Source: PATH,JAVA_HOME\n\nTotal: 3 JDK installation(s) found"
+}}).
+2026-09-14T16:15:02.217Z [INFO] ----------------------invoked appmod-list-jdks----------------------
+2026-09-14T16:15:02.254Z [INFO] ---------------------prepare appmod-list-mavens----------------------
+2026-09-14T16:15:02.254Z [INFO] [Tool.prepareInvocation]({name: appmod-list-mavens, input: {
+  "sessionId": "20260914161447"
+}}).
+2026-09-14T16:15:02.254Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:15:02.255Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "List mavens"
+}}).
+2026-09-14T16:15:02.255Z [INFO] ----------------------prepared appmod-list-mavens----------------------
+2026-09-14T16:15:02.404Z [INFO] ----------------------invoke appmod-list-mavens----------------------
+2026-09-14T16:15:02.404Z [INFO] [Tool.invoke]({name: appmod-list-mavens, modelId: auto, input: {
+  "sessionId": "20260914161447"
+}}).
+2026-09-14T16:15:02.404Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:15:02.411Z [INFO] [Tool.invoke]({result: {
+  "message": "We found following maven installations in your system:\n\n1. 📁 Path: E:\\apache-maven-3.9.16\\bin\n   🏷️ Source: PATH\n\nTotal: 1 Maven installation(s) found"
+}}).
+2026-09-14T16:15:02.411Z [INFO] ----------------------invoked appmod-list-mavens----------------------
+2026-09-14T16:15:27.497Z [INFO] ---------------------prepare appmod-confirm-upgrade-plan----------------------
+2026-09-14T16:15:27.497Z [INFO] [Tool.prepareInvocation]({name: appmod-confirm-upgrade-plan, input: {
+  "sessionId": "20260914161447",
+  "autoExecute": true
+}}).
+2026-09-14T16:15:27.497Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:15:27.498Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Auto-executing [upgrade plan](file:///e:/Code java/.github/modernize/java-upgrade/20260914161447/plan.md)"
+}}).
+2026-09-14T16:15:27.498Z [INFO] ----------------------prepared appmod-confirm-upgrade-plan----------------------
+2026-09-14T16:15:27.588Z [INFO] ----------------------invoke appmod-confirm-upgrade-plan----------------------
+2026-09-14T16:15:27.589Z [INFO] [Tool.invoke]({name: appmod-confirm-upgrade-plan, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "autoExecute": true
+}}).
+2026-09-14T16:15:27.589Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:15:27.589Z [INFO] Upgrade plan confirmed successfully.
+2026-09-14T16:15:27.590Z [INFO] [Tool.invoke]({result: {
+  "message": "Generated plan is reviewed and confirmed by the user! the upgrade process will start now."
+}}).
+2026-09-14T16:15:27.590Z [INFO] ----------------------invoked appmod-confirm-upgrade-plan----------------------
+2026-09-14T16:15:40.394Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:15:40.395Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planExecutionStarted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-09-14T16:15:40.395Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:15:40.396Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:15:40.396Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:15:40.515Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:15:40.515Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planExecutionStarted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-09-14T16:15:40.516Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:15:40.643Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'planExecutionStarted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:15:40.654Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:17:20.519Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:17:20.519Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "upgradeStepStarted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java compiler target to 26"
+  }
+}}).
+2026-09-14T16:17:20.520Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:17:20.520Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:17:20.520Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:17:20.666Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:17:20.667Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "upgradeStepStarted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java compiler target to 26"
+  }
+}}).
+2026-09-14T16:17:20.667Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:17:20.669Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'upgradeStepStarted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:17:20.669Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:20:14.767Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:20:14.767Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "upgradeStepCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java compiler target to 26",
+    "commitId": "N/A"
+  }
+}}).
+2026-09-14T16:20:14.768Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:20:14.768Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:20:14.768Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:20:14.871Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:20:14.871Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "upgradeStepCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "stepNumber": 3,
+    "stepTitle": "Upgrade Java compiler target to 26",
+    "commitId": "N/A"
+  }
+}}).
+2026-09-14T16:20:14.871Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:20:14.873Z [INFO] Project e:\Code java is a maven project, try to get java version from pom.xml
+2026-09-14T16:20:14.875Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'upgradeStepCompleted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:20:14.875Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:20:14.877Z [INFO] Project java version: 26
+2026-09-14T16:20:14.877Z [INFO] Maven project detected.
+2026-09-14T16:20:14.877Z [INFO] Build tool type: mvn
+2026-09-14T16:20:14.959Z [INFO] JDK: {
+  "name": "java",
+  "path": "C:\\Program Files\\Java\\jdk-26\\bin",
+  "version": "26"
+}
+2026-09-14T16:20:14.965Z [INFO] Build tool: {
+  "name": "mvn",
+  "path": "E:\\apache-maven-3.9.16\\bin",
+  "version": "",
+  "source": "PATH"
+}
+2026-09-14T16:20:14.965Z [INFO] Project config: {
+  "buildTool": {
+    "path": "E:\\apache-maven-3.9.16\\bin",
+    "name": "mvn",
+    "version": "",
+    "source": "PATH"
+  },
+  "jdk": {
+    "path": "C:\\Program Files\\Java\\jdk-26\\bin",
+    "name": "java",
+    "version": "26"
+  },
+  "name": "Code java",
+  "dir": "e:\\Code java"
+}
+2026-09-14T16:20:14.966Z [INFO] [MavenBuildTool] Getting Java version of e:\Code java from pom.xml
+2026-09-14T16:20:14.966Z [INFO] [MavenBuildTool] Searching for pom.xml files in e:\Code java
+2026-09-14T16:20:14.967Z [INFO] [MavenBuildTool] Getting all module coordinates of e:\Code java
+2026-09-14T16:20:14.967Z [INFO] [MavenBuildTool] Getting effective POMs of e:\Code java
+2026-09-14T16:20:14.970Z [INFO] [Environment] Running command (Java undefined): mvn help:effective-pom -Doutput=effective-pom-664bdefc-eac6-4494-8488-20acd8bbb437.log
+2026-09-14T16:20:14.992Z [INFO] [Environment] Running command (Java undefined): mvn dependency:tree -B
+[INFO] Scanning for projects...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com._2003store:2003-store >----------------------
+[INFO] Building 2003-store 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.7.0:tree (default-cli) @ 2003-store ---
+[INFO] 
+[INFO] ---------------------< com._2003store:2003-store >----------------------
+[INFO] Building 2003-store 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- help:3.5.2:effective-pom (default-cli) @ 2003-store ---
+[INFO] Effective-POM written to: e:\Code java\effective-pom-664bdefc-eac6-4494-8488-20acd8bbb437.log
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.212 s
+[INFO] Finished at: 2026-09-14T23:20:18+07:00
+[INFO] ------------------------------------------------------------------------
+2026-09-14T16:20:18.734Z [INFO] [MavenBuildTool] Found pom.xml files: e:\Code java\pom.xml
+2026-09-14T16:20:18.734Z [INFO] [MavenBuildTool] Java version found in e:\Code java\pom.xml: 26
+2026-09-14T16:20:19.143Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:20:19.143Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "buildCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "command": "mvn clean test",
+    "tool": "E:\\apache-maven-3.9.16\\bin\\mvn.cmd",
+    "jdk": "C:\\Program Files\\Java\\jdk-26.0.2.1"
+  }
+}}).
+2026-09-14T16:20:19.144Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:20:19.144Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:20:19.144Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:20:19.261Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:20:19.261Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "buildCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "command": "mvn clean test",
+    "tool": "E:\\apache-maven-3.9.16\\bin\\mvn.cmd",
+    "jdk": "C:\\Program Files\\Java\\jdk-26.0.2.1"
+  }
+}}).
+2026-09-14T16:20:19.261Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:20:19.262Z [INFO] Project e:\Code java is a maven project, try to get java version from pom.xml
+2026-09-14T16:20:19.263Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'buildCompleted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:20:19.263Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:20:19.264Z [INFO] Project java version: 26
+2026-09-14T16:20:19.265Z [INFO] Maven project detected.
+2026-09-14T16:20:19.265Z [INFO] Build tool type: mvn
+2026-09-14T16:20:19.370Z [INFO] JDK: {
+  "name": "java",
+  "path": "C:\\Program Files\\Java\\jdk-26\\bin",
+  "version": "26"
+}
+2026-09-14T16:20:19.374Z [INFO] Build tool: {
+  "name": "mvn",
+  "path": "E:\\apache-maven-3.9.16\\bin",
+  "version": "",
+  "source": "PATH"
+}
+2026-09-14T16:20:19.375Z [INFO] Project config: {
+  "buildTool": {
+    "path": "E:\\apache-maven-3.9.16\\bin",
+    "name": "mvn",
+    "version": "",
+    "source": "PATH"
+  },
+  "jdk": {
+    "path": "C:\\Program Files\\Java\\jdk-26\\bin",
+    "name": "java",
+    "version": "26"
+  },
+  "name": "Code java",
+  "dir": "e:\\Code java"
+}
+2026-09-14T16:20:19.375Z [INFO] [MavenBuildTool] Getting all module coordinates of e:\Code java
+2026-09-14T16:20:19.375Z [INFO] [MavenBuildTool] Getting effective POMs of e:\Code java
+2026-09-14T16:20:19.380Z [INFO] [Environment] Running command (Java undefined): mvn help:effective-pom -Doutput=effective-pom-d0bbc370-23cf-43bf-8159-afef7f3898b4.log
+[INFO] com._2003store:2003-store:war:1.0.0
+[INFO] +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:provided
+[INFO] +- org.glassfish.web:jakarta.servlet.jsp.jstl:jar:2.0.0:compile
+[INFO] |  \- jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:jar:2.0.0:compile
+[INFO] |     +- jakarta.el:jakarta.el-api:jar:4.0.0:compile
+[INFO] |     \- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.0:compile
+[INFO] |        \- com.sun.activation:jakarta.activation:jar:2.0.0:compile
+[INFO] +- com.mysql:mysql-connector-j:jar:8.0.33:compile
+[INFO] |  \- com.google.protobuf:protobuf-java:jar:3.21.9:compile
+[INFO] \- org.junit.jupiter:junit-jupiter:jar:5.10.2:test
+[INFO]    +- org.junit.jupiter:junit-jupiter-api:jar:5.10.2:test
+[INFO]    |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[INFO]    |  +- org.junit.platform:junit-platform-commons:jar:1.10.2:test
+[INFO]    |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO]    +- org.junit.jupiter:junit-jupiter-params:jar:5.10.2:test
+[INFO]    \- org.junit.jupiter:junit-jupiter-engine:jar:5.10.2:test
+[INFO]       \- org.junit.platform:junit-platform-engine:jar:1.10.2:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.280 s
+[INFO] Finished at: 2026-09-14T23:20:19+07:00
+[INFO] ------------------------------------------------------------------------
+2026-09-14T16:20:19.752Z [INFO] [MavenBuildTool] Successfully got dependency tree of e:\Code java
+2026-09-14T16:20:19.753Z [INFO] [MavenBuildTool] Getting Java version of e:\Code java from pom.xml
+2026-09-14T16:20:19.754Z [INFO] [MavenBuildTool] Searching for pom.xml files in e:\Code java
+2026-09-14T16:20:19.754Z [INFO] [MavenBuildTool] Found pom.xml files: e:\Code java\pom.xml
+2026-09-14T16:20:19.754Z [INFO] [MavenBuildTool] Java version found in e:\Code java\pom.xml: 26
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com._2003store:2003-store >----------------------
+[INFO] Building 2003-store 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- help:3.5.2:effective-pom (default-cli) @ 2003-store ---
+2026-09-14T16:20:22.742Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:20:22.743Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "testCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "command": "mvn clean test",
+    "tool": "E:\\apache-maven-3.9.16\\bin\\mvn.cmd",
+    "jdk": "C:\\Program Files\\Java\\jdk-26.0.2.1",
+    "result": "2 tests run, 0 failures, 0 errors, 0 skipped"
+  }
+}}).
+2026-09-14T16:20:22.743Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:20:22.743Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:20:22.744Z [INFO] ----------------------prepared appmod-report-event----------------------
+[INFO] Effective-POM written to: e:\Code java\effective-pom-d0bbc370-23cf-43bf-8159-afef7f3898b4.log
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.117 s
+[INFO] Finished at: 2026-09-14T23:20:22+07:00
+[INFO] ------------------------------------------------------------------------
+2026-09-14T16:20:22.841Z [INFO] [BaseBuildTool] Found 1 modules: .
+2026-09-14T16:20:22.859Z [INFO] [BaseBuildTool] Finish counting Java and class files
+2026-09-14T16:20:22.860Z [INFO] [MavenBuildTool] Cleaning e:\Code java using Maven
+2026-09-14T16:20:22.864Z [INFO] [Environment] Running command (Java undefined): mvn clean -q -B -fn
+2026-09-14T16:20:22.915Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:20:22.915Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "testCompleted",
+  "phase": "execute",
+  "status": "succeeded",
+  "details": {
+    "command": "mvn clean test",
+    "tool": "E:\\apache-maven-3.9.16\\bin\\mvn.cmd",
+    "jdk": "C:\\Program Files\\Java\\jdk-26.0.2.1",
+    "result": "2 tests run, 0 failures, 0 errors, 0 skipped"
+  }
+}}).
+2026-09-14T16:20:22.916Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:20:22.917Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'testCompleted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:20:22.917Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:20:25.629Z [INFO] [MavenBuildTool] Getting Java version of e:\Code java from pom.xml
+2026-09-14T16:20:25.630Z [INFO] [MavenBuildTool] Searching for pom.xml files in e:\Code java
+2026-09-14T16:20:25.630Z [INFO] [MavenBuildTool] Found pom.xml files: e:\Code java\pom.xml
+2026-09-14T16:20:25.631Z [INFO] [MavenBuildTool] Java version found in e:\Code java\pom.xml: 26
+2026-09-14T16:20:26.895Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:20:26.895Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planExecutionCompleted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-09-14T16:20:26.896Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:20:26.896Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:20:26.896Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:20:27.007Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:20:27.008Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "planExecutionCompleted",
+  "phase": "execute",
+  "status": "succeeded"
+}}).
+2026-09-14T16:20:27.008Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:20:27.011Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'planExecutionCompleted' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:20:27.011Z [INFO] ----------------------invoked appmod-report-event----------------------
+2026-09-14T16:20:30.616Z [INFO] ---------------------prepare appmod-report-event----------------------
+2026-09-14T16:20:30.616Z [INFO] [Tool.prepareInvocation]({name: appmod-report-event, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "summaryGenerated",
+  "phase": "summarize",
+  "status": "succeeded",
+  "message": "Java runtime upgraded to Java 26 and verified with a successful Maven test run."
+}}).
+2026-09-14T16:20:30.617Z [INFO] [Tool.prepareInvocation] do prepare invocation.
+2026-09-14T16:20:30.617Z [INFO] [Tool.prepareInvocation]({result: {
+  "invocationMessage": "Report upgrade event"
+}}).
+2026-09-14T16:20:30.617Z [INFO] ----------------------prepared appmod-report-event----------------------
+2026-09-14T16:20:30.727Z [INFO] ----------------------invoke appmod-report-event----------------------
+2026-09-14T16:20:30.727Z [INFO] [Tool.invoke]({name: appmod-report-event, modelId: auto, input: {
+  "sessionId": "20260914161447",
+  "projectPath": "e:\\Code java",
+  "event": "summaryGenerated",
+  "phase": "summarize",
+  "status": "succeeded",
+  "message": "Java runtime upgraded to Java 26 and verified with a successful Maven test run."
+}}).
+2026-09-14T16:20:30.727Z [INFO] [Tool.invoke] do invoke.
+2026-09-14T16:20:30.729Z [INFO] [Tool.invoke]({result: {
+  "message": "Event 'summaryGenerated' reported!\nSession ID: 20260914161447,\nSession Dir: e:\\Code java\\.github\\modernize\\java-upgrade\\20260914161447"
+}}).
+2026-09-14T16:20:30.729Z [INFO] ----------------------invoked appmod-report-event----------------------
