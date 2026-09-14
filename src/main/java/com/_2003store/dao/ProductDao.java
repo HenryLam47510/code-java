@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,35 +92,54 @@ public class ProductDao {
     }
 
     public void addProduct(Product product) {
-        String sql = "INSERT INTO products (id, name, category, brand, price, stock, image, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (name, category, brand, supplier, color, size, status, origin, price, stock, image, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, product.getId());
-            stmt.setString(2, product.getName());
-            stmt.setString(3, product.getCategory());
-            stmt.setString(4, product.getBrand());
-            stmt.setBigDecimal(5, product.getPrice());
-            stmt.setInt(6, product.getStock());
-            stmt.setString(7, product.getImage());
-            stmt.setString(8, product.getDescription());
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, product.getName());
+            stmt.setString(2, product.getCategory());
+            stmt.setString(3, product.getBrand());
+            stmt.setString(4, product.getSupplier() == null || product.getSupplier().isBlank() ? "Chưa xác định" : product.getSupplier());
+            stmt.setString(5, product.getColor() == null || product.getColor().isBlank() ? "Không xác định" : product.getColor());
+            stmt.setString(6, product.getSize() == null || product.getSize().isBlank() ? "39" : product.getSize());
+            stmt.setString(7, product.getStatus() == null || product.getStatus().isBlank() ? "Còn hàng" : product.getStatus());
+            stmt.setString(8, product.getOrigin() == null || product.getOrigin().isBlank() ? "Chưa xác định" : product.getOrigin());
+            stmt.setBigDecimal(9, product.getPrice());
+            stmt.setInt(10, product.getStock());
+            stmt.setString(11, product.getImage());
+            stmt.setString(12, product.getDescription());
             stmt.executeUpdate();
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    product.setId(generatedKeys.getInt(1));
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public void updateProduct(Product product) {
-        String sql = "UPDATE products SET name = ?, category = ?, brand = ?, price = ?, stock = ?, image = ?, description = ? WHERE id = ?";
+        if (product == null || product.getId() <= 0) {
+            return;
+        }
+
+        String sql = "UPDATE products SET name = ?, category = ?, brand = ?, supplier = ?, color = ?, size = ?, status = ?, origin = ?, price = ?, stock = ?, image = ?, description = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, product.getName());
             stmt.setString(2, product.getCategory());
             stmt.setString(3, product.getBrand());
-            stmt.setBigDecimal(4, product.getPrice());
-            stmt.setInt(5, product.getStock());
-            stmt.setString(6, product.getImage());
-            stmt.setString(7, product.getDescription());
-            stmt.setInt(8, product.getId());
+            stmt.setString(4, product.getSupplier() == null || product.getSupplier().isBlank() ? "Chưa xác định" : product.getSupplier());
+            stmt.setString(5, product.getColor() == null || product.getColor().isBlank() ? "Không xác định" : product.getColor());
+            stmt.setString(6, product.getSize() == null || product.getSize().isBlank() ? "39" : product.getSize());
+            stmt.setString(7, product.getStatus() == null || product.getStatus().isBlank() ? "Còn hàng" : product.getStatus());
+            stmt.setString(8, product.getOrigin() == null || product.getOrigin().isBlank() ? "Chưa xác định" : product.getOrigin());
+            stmt.setBigDecimal(9, product.getPrice());
+            stmt.setInt(10, product.getStock());
+            stmt.setString(11, product.getImage());
+            stmt.setString(12, product.getDescription());
+            stmt.setInt(13, product.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -143,6 +163,11 @@ public class ProductDao {
         product.setName(rs.getString("name"));
         product.setCategory(rs.getString("category"));
         product.setBrand(rs.getString("brand"));
+        product.setSupplier(rs.getString("supplier"));
+        product.setColor(rs.getString("color"));
+        product.setSize(rs.getString("size"));
+        product.setStatus(rs.getString("status"));
+        product.setOrigin(rs.getString("origin"));
         product.setPrice(rs.getBigDecimal("price"));
         product.setStock(rs.getInt("stock"));
         product.setImage(rs.getString("image"));

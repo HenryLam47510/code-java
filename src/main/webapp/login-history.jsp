@@ -9,7 +9,7 @@
     <title>Lịch sử đăng nhập - 2003 Store</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page dashboard-theme">
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">

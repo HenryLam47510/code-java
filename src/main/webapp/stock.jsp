@@ -10,7 +10,7 @@
     <title>Quản lý nhập kho - 2003 Store</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page inventory-theme">
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">

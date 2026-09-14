@@ -81,16 +81,25 @@ public class ProductServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         Product product = new Product();
-        product.setId(Integer.parseInt(request.getParameter("id")));
+        String idParam = request.getParameter("id");
+        if (idParam != null && !idParam.isBlank()) {
+            product.setId(Integer.parseInt(idParam));
+        }
+
         product.setName(request.getParameter("name"));
         product.setCategory(request.getParameter("category"));
         product.setBrand(request.getParameter("brand"));
+        product.setSupplier(request.getParameter("supplier"));
+        product.setColor(request.getParameter("color"));
+        product.setSize(request.getParameter("size"));
+        product.setStatus(request.getParameter("status"));
+        product.setOrigin(request.getParameter("origin"));
         product.setPrice(new BigDecimal(request.getParameter("price")));
         product.setStock(Integer.parseInt(request.getParameter("stock")));
         product.setImage(request.getParameter("image"));
         product.setDescription(request.getParameter("description"));
 
-        if ("update".equals(action) || "/products/update".equals(path)) {
+        if (("update".equals(action) || "/products/update".equals(path)) && product.getId() > 0) {
             productDao.updateProduct(product);
         } else {
             productDao.addProduct(product);

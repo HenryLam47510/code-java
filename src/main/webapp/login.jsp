@@ -8,27 +8,41 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body class="auth-page">
-    <div class="auth-box">
-        <h2>Đăng nhập</h2>
-        <p class="subtext">Hệ thống quản lý 2003 Store</p>
+    <div class="auth-shell">
+        <div class="auth-visual">
+            <div class="brand-mark">2003</div>
+            <h1>2003 Store</h1>
+            <p>Hệ thống quản lý bán hàng và kho vận</p>
+            <ul>
+                <li>Quản lý đơn hàng</li>
+                <li>Quản lý kho hàng</li>
+                <li>Thanh toán nhanh chóng</li>
+            </ul>
+        </div>
 
-        <% if (request.getAttribute("error") != null) { %>
-            <div class="alert"><%= request.getAttribute("error") %></div>
-        <% } %>
+        <div class="auth-box">
+            <div class="auth-header">
+                <span class="auth-badge">Admin Portal</span>
+                <h2>Đăng nhập</h2>
+            </div>
 
-        <form method="post" action="${pageContext.request.contextPath}/login">
-            <label>Username</label>
-            <input type="text" name="username" required>
+            <% if (request.getAttribute("error") != null) { %>
+                <div class="alert"><%= request.getAttribute("error") %></div>
+            <% } %>
 
-            <label>Password</label>
-            <input type="password" name="password" required>
+            <form method="post" action="${pageContext.request.contextPath}/login" class="auth-form">
+                <label class="form-field">
+                    <span>Tài khoản</span>
+                    <input type="text" name="username" placeholder="Nhập tên đăng nhập" required>
+                </label>
 
-            <button type="submit" class="btn btn-primary">Đăng nhập</button>
-        </form>
+                <label class="form-field">
+                    <span>Mật khẩu</span>
+                    <input type="password" name="password" placeholder="Nhập mật khẩu" required>
+                </label>
 
-        <div class="demo-account">
-            <p>Tài khoản demo:</p>
-            <strong>admin / 123456</strong>
+                <button type="submit" class="btn btn-primary auth-submit">Đăng nhập</button>
+            </form>
         </div>
     </div>
 </body>

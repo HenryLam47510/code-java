@@ -3,6 +3,7 @@ package com._2003store.service;
 import com._2003store.dao.OrderDao;
 import com._2003store.dao.ProductDao;
 import com._2003store.model.Order;
+import com._2003store.model.Product;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,8 +46,26 @@ public class StatsService {
         return orderDao.getTotalOrders();
     }
 
+    public int getCompletedOrdersCount() {
+        return orderDao.getCompletedOrdersCount();
+    }
+
+    public BigDecimal getCompletedRevenue() {
+        return orderDao.getCompletedRevenue();
+    }
+
+    public BigDecimal getPaymentCompletionRate() {
+        return orderDao.getPaymentCompletionRate();
+    }
+
     public List<Order> getRecentOrders() {
         return orderDao.getRecentOrders();
+    }
+
+    public List<Product> getRecentProducts() {
+        List<Product> products = productDao.getAllProducts();
+        int limit = Math.min(products.size(), 5);
+        return products.subList(0, limit);
     }
 
     public BigDecimal getTodayRevenue() {

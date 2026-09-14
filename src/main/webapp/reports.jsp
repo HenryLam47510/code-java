@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page reports-theme">
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">

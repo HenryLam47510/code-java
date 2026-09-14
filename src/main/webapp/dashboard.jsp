@@ -1,4 +1,6 @@
 <%@ page import="com._2003store.model.Order" %>
+<%@ page import="com._2003store.model.Product" %>
+<%@ page import="com._2003store.model.RevenuePoint" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
@@ -9,9 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - 2003 Store</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page dashboard-theme">
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
@@ -63,7 +66,16 @@
                 <span class="eyebrow">Tổng quan cửa hàng</span>
                 <h2>Hiệu suất bán hàng trong ngày</h2>
             </div>
-            <div class="summary-chip success">+12.5% so với tháng trước</div>
+            <div class="summary-chip success">
+                <%=
+                    java.math.BigDecimal totalRevenue = (java.math.BigDecimal) request.getAttribute("totalRevenue");
+                    java.math.BigDecimal todayRevenue = (java.math.BigDecimal) request.getAttribute("todayRevenue");
+                    String revenueSummary = totalRevenue != null && totalRevenue.compareTo(java.math.BigDecimal.ZERO) > 0
+                            ? NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(totalRevenue) + "₫ tổng doanh thu"
+                            : "Chưa có doanh thu";
+                    out.print(revenueSummary);
+                %>
+            </div>
         </section>
 
         <div class="chart-box card">
@@ -71,16 +83,56 @@
                 <h3>Báo cáo doanh thu</h3>
                 <span class="muted">Tuần gần nhất</span>
             </div>
-            <div class="chart-bars">
-                <div class="bar" style="height: 45%"></div>
-                <div class="bar" style="height: 58%"></div>
-                <div class="bar" style="height: 40%"></div>
-                <div class="bar" style="height: 68%"></div>
-                <div class="bar" style="height: 88%"></div>
-                <div class="bar" style="height: 78%"></div>
-                <div class="bar" style="height: 96%"></div>
-            </div>
+            <canvas id="dashboardRevenueChart" height="100"></canvas>
         </div>
+
+        <script>
+            const revenuePoints = [
+                <%
+                    List<RevenuePoint> revenueSeries = (List<RevenuePoint>) request.getAttribute("dailyRevenue");
+                    if (revenueSeries != null) {
+                        for (int i = 0; i < revenueSeries.size(); i++) {
+                            RevenuePoint point = revenueSeries.get(i);
+                            out.print("{ label: '" + point.getLabel() + "', value: " + (point.getValue() == null ? 0 : point.getValue()) + " }");
+                            if (i < revenueSeries.size() - 1) out.print(",");
+                        }
+                    }
+                %>
+            ];
+
+            const revenueSeriesLabels = revenuePoints.map(item => item.label);
+            const revenueSeriesValues = revenuePoints.map(item => Number(item.value || 0));
+
+            new Chart(document.getElementById('dashboardRevenueChart'), {
+                type: 'line',
+                data: {
+                    labels: revenueSeriesLabels,
+                    datasets: [{
+                        label: 'Doanh thu (VNĐ)',
+                        data: revenueSeriesValues,
+                        borderColor: '#1b66f2',
+                        backgroundColor: 'rgba(27, 102, 242, 0.15)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return Number(value).toLocaleString('vi-VN') + '₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
 
         <div class="stats">
             <div class="card stat stat-blue">
@@ -116,6 +168,37 @@
         <div class="stats secondary-stats">
             <div class="card stat">
                 <div class="stat-top">
+                    <h3>Lợi nhuận đã thực thu</h3>
+                    <span class="mini-badge success">Thực tế</span>
+                </div>
+                <p><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("completedRevenue")) %>₫</p>
+            </div>
+            <div class="card stat">
+                <div class="stat-top">
+                    <h3>Số đơn hoàn tất</h3>
+                    <span class="mini-badge">Hoàn tất</span>
+                </div>
+                <p>${completedOrdersCount}</p>
+            </div>
+            <div class="card stat">
+                <div class="stat-top">
+                    <h3>Tỷ lệ thanh toán</h3>
+                    <span class="mini-badge success">Đã xác nhận</span>
+                </div>
+                <p><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("paymentRate")) %>%</p>
+            </div>
+            <div class="card stat">
+                <div class="stat-top">
+                    <h3>Sản phẩm sắp hết</h3>
+                    <span class="mini-badge warning-badge">Cảnh báo</span>
+                </div>
+                <p>${lowStockCount}</p>
+            </div>
+        </div>
+
+        <div class="stats secondary-stats">
+            <div class="card stat">
+                <div class="stat-top">
                     <h3>Doanh thu hôm nay</h3>
                     <span class="mini-badge alert-badge">Hôm nay</span>
                 </div>
@@ -137,28 +220,53 @@
             </div>
             <div class="card stat">
                 <div class="stat-top">
-                    <h3>Sản phẩm sắp hết</h3>
-                    <span class="mini-badge warning-badge">Cảnh báo</span>
-                </div>
-                <p>${lowStockCount}</p>
-            </div>
-        </div>
-
-        <div class="stats secondary-stats">
-            <div class="card stat">
-                <div class="stat-top">
                     <h3>Đơn chờ xử lý</h3>
                     <span class="mini-badge">Cần xử lý</span>
                 </div>
                 <p>${pendingOrdersCount}</p>
             </div>
-            <div class="card stat">
-                <div class="stat-top">
-                    <h3>Tỷ lệ hoạt động</h3>
-                    <span class="mini-badge success">Ổn định</span>
-                </div>
-                <p>94%</p>
+        </div>
+
+        <div class="card table-card">
+            <div class="section-head">
+                <h3>Sản phẩm gần đây</h3>
+                <a href="${pageContext.request.contextPath}/products" class="table-link">Xem tất cả</a>
             </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Màu sắc</th>
+                        <th>Size</th>
+                        <th>Xuất xứ</th>
+                        <th>Trạng thái</th>
+                        <th>Tồn kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                        List<Product> products = (List<Product>) request.getAttribute("products");
+                        if (products != null) {
+                            for (Product product : products) {
+                    %>
+                    <tr>
+                        <td><%= product.getId() %></td>
+                        <td><%= product.getName() %></td>
+                        <td><%= product.getSupplier() == null ? "Chưa xác định" : product.getSupplier() %></td>
+                        <td><%= product.getColor() == null ? "Không xác định" : product.getColor() %></td>
+                        <td><%= product.getSize() == null ? "39" : product.getSize() %></td>
+                        <td><%= product.getOrigin() == null ? "Chưa xác định" : product.getOrigin() %></td>
+                        <td><span class="badge"><%= product.getStatus() == null ? "Còn hàng" : product.getStatus() %></span></td>
+                        <td><%= product.getStock() %></td>
+                    </tr>
+                    <%
+                            }
+                        }
+                    %>
+                </tbody>
+            </table>
         </div>
 
         <div class="card table-card">

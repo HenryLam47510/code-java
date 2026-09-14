@@ -9,7 +9,7 @@
     <title>Quản lý sản phẩm - 2003 Store</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page inventory-theme">
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
@@ -59,10 +59,19 @@
             <h3>Quản lý sản phẩm</h3>
             <form action="${pageContext.request.contextPath}/products" method="post" class="product-form">
                 <input type="hidden" name="action" id="productAction" value="add">
-                <input type="number" name="id" id="productId" placeholder="ID" required>
+                <input type="number" name="id" id="productId" placeholder="ID (tùy chọn)">
                 <input type="text" name="name" id="productName" placeholder="Tên sản phẩm" required>
                 <input type="text" name="category" id="productCategory" placeholder="Danh mục" required>
                 <input type="text" name="brand" id="productBrand" placeholder="Thương hiệu" required>
+                <input type="text" name="supplier" id="productSupplier" placeholder="Nhà cung cấp" required>
+                <input type="text" name="color" id="productColor" placeholder="Màu sắc" required>
+                <input type="text" name="size" id="productSize" placeholder="Size" required>
+                <input type="text" name="origin" id="productOrigin" placeholder="Xuất xứ" required>
+                <select name="status" id="productStatus" required>
+                    <option value="Còn hàng">Còn hàng</option>
+                    <option value="Hết hàng">Hết hàng</option>
+                    <option value="Sắp về">Sắp về</option>
+                </select>
                 <input type="number" step="1000" name="price" id="productPrice" placeholder="Giá" required>
                 <input type="number" name="stock" id="productStock" placeholder="Tồn kho" required>
                 <input type="text" name="image" id="productImage" placeholder="URL hình ảnh" required>
@@ -99,6 +108,11 @@
                         <th>ID</th>
                         <th>Hình</th>
                         <th>Tên</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Màu sắc</th>
+                        <th>Size</th>
+                        <th>Xuất xứ</th>
+                        <th>Trạng thái</th>
                         <th>Giá</th>
                         <th>Tồn kho</th>
                         <th>Thao tác</th>
@@ -114,6 +128,11 @@
                         data-name="<%= p.getName() %>"
                         data-category="<%= p.getCategory() %>"
                         data-brand="<%= p.getBrand() %>"
+                        data-supplier="<%= p.getSupplier() == null ? "" : p.getSupplier() %>"
+                        data-color="<%= p.getColor() == null ? "" : p.getColor() %>"
+                        data-size="<%= p.getSize() == null ? "" : p.getSize() %>"
+                        data-origin="<%= p.getOrigin() == null ? "" : p.getOrigin() %>"
+                        data-status="<%= p.getStatus() == null ? "" : p.getStatus() %>"
                         data-price="<%= p.getPrice() %>"
                         data-stock="<%= p.getStock() %>"
                         data-image="<%= p.getImage() %>"
@@ -121,6 +140,11 @@
                         <td><%= p.getId() %></td>
                         <td><img src="<%= p.getImage() %>" alt="" class="thumb"></td>
                         <td><%= p.getName() %></td>
+                        <td><%= p.getSupplier() == null ? "Chưa xác định" : p.getSupplier() %></td>
+                        <td><%= p.getColor() == null ? "Không xác định" : p.getColor() %></td>
+                        <td><%= p.getSize() == null ? "39" : p.getSize() %></td>
+                        <td><%= p.getOrigin() == null ? "Chưa xác định" : p.getOrigin() %></td>
+                        <td><%= p.getStatus() == null ? "Còn hàng" : p.getStatus() %></td>
                         <td><%= p.getPrice() %>₫</td>
                         <td><%= p.getStock() %></td>
                         <td>
@@ -161,6 +185,11 @@
             document.getElementById('productName').value = row.dataset.name;
             document.getElementById('productCategory').value = row.dataset.category;
             document.getElementById('productBrand').value = row.dataset.brand;
+            document.getElementById('productSupplier').value = row.dataset.supplier || '';
+            document.getElementById('productColor').value = row.dataset.color || '';
+            document.getElementById('productSize').value = row.dataset.size || '';
+            document.getElementById('productOrigin').value = row.dataset.origin || '';
+            document.getElementById('productStatus').value = row.dataset.status || 'Còn hàng';
             document.getElementById('productPrice').value = row.dataset.price;
             document.getElementById('productStock').value = row.dataset.stock;
             document.getElementById('productImage').value = row.dataset.image;

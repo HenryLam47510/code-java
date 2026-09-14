@@ -53,7 +53,7 @@ public class InvoiceServlet extends HttpServlet {
             invoice.setCustomerName(customerName == null || customerName.isBlank() ? order.getCustomerName() : customerName);
             invoice.setPhone(phone == null || phone.isBlank() ? order.getPhone() : phone);
             invoice.setTotalAmount(order.getTotalAmount());
-            invoice.setPaymentMethod(paymentMethod == null || paymentMethod.isBlank() ? "Tien mat" : paymentMethod);
+            invoice.setPaymentMethod(paymentMethod == null || paymentMethod.isBlank() ? "Tiền mặt" : paymentMethod);
             invoiceDao.createInvoice(invoice);
         }
 

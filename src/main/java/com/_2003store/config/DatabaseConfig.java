@@ -20,6 +20,22 @@ public class DatabaseConfig {
             throw new SQLException("MySQL JDBC Driver not found", e);
         }
 
-        return DriverManager.getConnection(url, user, password);
+        try {
+            return DriverManager.getConnection(url, user, password);
+        } catch (SQLException e) {
+            if (!url.contains("/2003_store")) {
+                throw e;
+            }
+
+            String bootstrapUrl = url.replace("/2003_store", "/");
+            try (Connection bootstrapConn = DriverManager.getConnection(bootstrapUrl, user, password);
+                 java.sql.Statement statement = bootstrapConn.createStatement()) {
+                statement.executeUpdate("CREATE DATABASE IF NOT EXISTS `2003_store` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            } catch (SQLException ignored) {
+                // Ignore bootstrap failures and retry the original url; a later SQLException will still surface the root cause clearly.
+            }
+
+            return DriverManager.getConnection(url, user, password);
+        }
     }
 }
