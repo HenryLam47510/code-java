@@ -1,4 +1,5 @@
 <%@ page import="com._2003store.model.Invoice" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
@@ -7,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hóa đơn - 2003 Store</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=2003store-20260921">
 </head>
 <body class="dashboard-page">
     <aside class="sidebar">
@@ -94,7 +95,7 @@
                         <td><%= invoice.getPhone() %></td>
                         <td><%= invoice.getPaymentMethod() %></td>
                         <td><%= invoice.getTotalAmount() %>₫</td>
-                        <td><%= invoice.getCreatedAt() %></td>
+                        <td><%= invoice.getCreatedAt() != null ? new SimpleDateFormat("dd/MM/yyyy HH:mm").format(invoice.getCreatedAt()) : "--" %></td>
                     </tr>
                     <%
                             }

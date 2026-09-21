@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý nhân viên - 2003 Store</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=2003store-20260921">
 </head>
 <body class="dashboard-page">
     <aside class="sidebar">
@@ -49,69 +49,117 @@
         </nav>
     </aside>
 
-    <main class="main-panel">
-        <div class="topbar">
-            <h1>Quản lý nhân viên & quyền truy cập</h1>
-            <span class="welcome-pill">Xin chào, ${sessionScope.user.fullName}</span>
-        </div>
+    <main class="main-panel dashboard-shell">
+        <div class="workspace-col">
+            <header class="topbar modern-topbar">
+                <div class="search-box">
+                    <span>⌕</span>
+                    <input type="text" placeholder="Tìm nhân viên, vai trò, số điện thoại...">
+                </div>
+                <div class="topbar-actions">
+                    <button class="icon-button" type="button" aria-label="Thông báo">
+                        🔔
+                        <span class="badge-count">7</span>
+                    </button>
+                    <div class="user-mini">
+                        <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>
+                        <div>
+                            <strong>${sessionScope.user.fullName}</strong>
+                            <small>${sessionScope.user.role}</small>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-        <div class="card form-card">
-            <h3>Thêm / chỉnh sửa nhân viên</h3>
-            <form action="${pageContext.request.contextPath}/employees" method="post" class="stock-form">
-                <input type="hidden" name="id" value="${employeeEdit.id}">
-                <input type="text" name="fullName" placeholder="Họ tên" value="${employeeEdit.fullName}" required>
-                <input type="text" name="username" placeholder="Tên đăng nhập" value="${employeeEdit.username}" required>
-                <input type="password" name="password" placeholder="Mật khẩu" value="${employeeEdit.password}">
-                <select name="role" required>
-                    <option value="ADMIN" ${employeeEdit.role == 'ADMIN' ? 'selected' : ''}>Admin</option>
-                    <option value="MANAGER" ${employeeEdit.role == 'MANAGER' ? 'selected' : ''}>Quản lý</option>
-                    <option value="STAFF" ${employeeEdit.role == 'STAFF' || employeeEdit.role == null ? 'selected' : ''}>Nhân viên</option>
-                </select>
-                <input type="text" name="position" placeholder="Vị trí công việc" value="${employeeEdit.position}">
-                <input type="text" name="phone" placeholder="Số điện thoại" value="${employeeEdit.phone}">
-                <button type="submit" class="btn btn-primary">Lưu nhân viên</button>
-            </form>
-        </div>
+            <div class="card form-card">
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-kicker">Nhân sự</span>
+                        <h3>Thêm / chỉnh sửa nhân viên</h3>
+                    </div>
+                </div>
+                <form action="${pageContext.request.contextPath}/employees" method="post" class="stock-form">
+                    <input type="hidden" name="id" value="${employeeEdit.id}">
+                    <input type="text" name="fullName" placeholder="Họ tên" value="${employeeEdit.fullName}" required>
+                    <input type="text" name="username" placeholder="Tên đăng nhập" value="${employeeEdit.username}" required>
+                    <input type="password" name="password" placeholder="Mật khẩu" value="${employeeEdit.password}">
+                    <select name="role" required>
+                        <option value="ADMIN" ${employeeEdit.role == 'ADMIN' ? 'selected' : ''}>Admin</option>
+                        <option value="MANAGER" ${employeeEdit.role == 'MANAGER' ? 'selected' : ''}>Quản lý</option>
+                        <option value="STAFF" ${employeeEdit.role == 'STAFF' || employeeEdit.role == null ? 'selected' : ''}>Nhân viên</option>
+                    </select>
+                    <input type="text" name="position" placeholder="Vị trí công việc" value="${employeeEdit.position}">
+                    <input type="text" name="phone" placeholder="Số điện thoại" value="${employeeEdit.phone}">
+                    <button type="submit" class="btn btn-primary">Lưu nhân viên</button>
+                </form>
+            </div>
 
-        <div class="card table-card">
-            <h3>Danh sách nhân viên</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Họ tên</th>
-                        <th>Username</th>
-                        <th>Vai trò</th>
-                        <th>Vị trí</th>
-                        <th>SĐT</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <%
-                        List<Employee> employees = (List<Employee>) request.getAttribute("employees");
-                        if (employees != null) {
-                            for (Employee employee : employees) {
-                    %>
-                    <tr>
-                        <td><%= employee.getId() %></td>
-                        <td><%= employee.getFullName() %></td>
-                        <td><%= employee.getUsername() %></td>
-                        <td><%= employee.getRole() %></td>
-                        <td><%= employee.getPosition() %></td>
-                        <td><%= employee.getPhone() %></td>
-                        <td>
-                            <a href="${pageContext.request.contextPath}/employees?action=edit&id=<%= employee.getId() %>" class="btn btn-primary">Sửa</a>
-                            <a href="${pageContext.request.contextPath}/employees?action=delete&id=<%= employee.getId() %>" class="btn" onclick="return confirm('Xoá nhân viên này?')">Xoá</a>
-                        </td>
-                    </tr>
-                    <%
+            <div class="card table-card">
+                <div class="section-head">
+                    <h3>Danh sách nhân viên</h3>
+                    <a href="#" class="table-link">Phân quyền</a>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Username</th>
+                            <th>Vai trò</th>
+                            <th>Vị trí</th>
+                            <th>SĐT</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%
+                            List<Employee> employees = (List<Employee>) request.getAttribute("employees");
+                            if (employees != null) {
+                                for (Employee employee : employees) {
+                        %>
+                        <tr>
+                            <td><%= employee.getId() %></td>
+                            <td><%= employee.getFullName() %></td>
+                            <td><%= employee.getUsername() %></td>
+                            <td><span class="badge"><%= employee.getRole() %></span></td>
+                            <td><%= employee.getPosition() %></td>
+                            <td><%= employee.getPhone() %></td>
+                            <td>
+                                <a href="${pageContext.request.contextPath}/employees?action=edit&id=<%= employee.getId() %>" class="btn btn-small">Sửa</a>
+                                <a href="${pageContext.request.contextPath}/employees?action=delete&id=<%= employee.getId() %>" class="btn btn-small" onclick="return confirm('Xoá nhân viên này?')">Xoá</a>
+                            </td>
+                        </tr>
+                        <%
+                                }
                             }
-                        }
-                    %>
-                </tbody>
-            </table>
+                        %>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        <aside class="right-rail">
+            <div class="notification-card">
+                <div class="notification-header">
+                    <h4>Hiệu suất</h4>
+                    <button class="dismiss-btn" type="button">Xem</button>
+                </div>
+                <div class="notice">
+                    <div class="avatar">NV</div>
+                    <div>
+                        <h5>Đội ngũ</h5>
+                        <p>8 nhân sự đang hoạt động, 2 ca làm sáng/tối.</p>
+                    </div>
+                </div>
+                <div class="notice critical">
+                    <div class="avatar">!</div>
+                    <div>
+                        <h5>Phân quyền</h5>
+                        <p>Cần kiểm tra quyền truy cập đối với 2 tài khoản mới.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </main>
 </body>
 </html>

@@ -2,6 +2,8 @@ package com._2003store.servlet;
 
 import com._2003store.dao.ProductDao;
 import com._2003store.model.Product;
+import com._2003store.model.User;
+import com._2003store.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,13 +18,25 @@ import java.util.List;
 @WebServlet({"/products", "/products/add", "/products/update", "/products/delete"})
 public class ProductServlet extends HttpServlet {
     private final ProductDao productDao = new ProductDao();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (!authService.hasAccess(user, "products")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền quản lý sản phẩm.");
+            return;
+        }
+
         String path = request.getServletPath();
         if ("/products/delete".equals(path)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            productDao.deleteProduct(id);
+            productDao.softDeleteProduct(id, "Xóa khỏi danh sách sản phẩm");
             response.sendRedirect(request.getContextPath() + "/products");
             return;
         }
@@ -41,7 +55,7 @@ public class ProductServlet extends HttpServlet {
         }
 
         int pageSize = 5;
-        List<Product> allProducts = productDao.getAllProducts();
+        List<Product> allProducts = "STAFF".equalsIgnoreCase(user.getRole()) ? productDao.getVisibleProducts() : productDao.getAllProducts();
         List<Product> filteredProducts = new ArrayList<>();
 
         for (Product product : allProducts) {
@@ -77,6 +91,17 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (!authService.hasAccess(user, "products")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền sửa sản phẩm.");
+            return;
+        }
+
         String path = request.getServletPath();
         String action = request.getParameter("action");
 

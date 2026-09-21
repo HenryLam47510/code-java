@@ -11,6 +11,8 @@ public class Product {
     private int stock;
     private String image;
     private String description;
+    private boolean deleted;
+    private String deletedReason;
 
     public Product() {
     }
@@ -88,5 +90,21 @@ public class Product {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public String getDeletedReason() {
+        return deletedReason;
+    }
+
+    public void setDeletedReason(String deletedReason) {
+        this.deletedReason = deletedReason;
     }
 }

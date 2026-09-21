@@ -13,8 +13,18 @@ import java.util.List;
 
 public class ProductDao {
     public List<Product> getAllProducts() {
+        return getProducts(false);
+    }
+
+    public List<Product> getVisibleProducts() {
+        return getProducts(true);
+    }
+
+    private List<Product> getProducts(boolean visibleOnly) {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM products ORDER BY id";
+        String sql = visibleOnly
+                ? "SELECT * FROM products WHERE is_deleted IS NULL OR is_deleted = false ORDER BY id"
+                : "SELECT * FROM products ORDER BY id";
 
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -31,7 +41,7 @@ public class ProductDao {
     }
 
     public int countProducts() {
-        String sql = "SELECT COUNT(*) FROM products";
+        String sql = "SELECT COUNT(*) FROM products WHERE is_deleted IS NULL OR is_deleted = false";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -45,7 +55,7 @@ public class ProductDao {
     }
 
     public int getTotalStock() {
-        String sql = "SELECT COALESCE(SUM(stock), 0) FROM products";
+        String sql = "SELECT COALESCE(SUM(stock), 0) FROM products WHERE is_deleted IS NULL OR is_deleted = false";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -59,7 +69,7 @@ public class ProductDao {
     }
 
     public int getLowStockCount(int threshold) {
-        String sql = "SELECT COUNT(*) FROM products WHERE stock <= ?";
+        String sql = "SELECT COUNT(*) FROM products WHERE (is_deleted IS NULL OR is_deleted = false) AND stock <= ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, threshold);
@@ -90,8 +100,25 @@ public class ProductDao {
         return null;
     }
 
+    public boolean hasSufficientStock(int productId, int requestedQuantity) {
+        Product product = getProductById(productId);
+        return product != null && product.getStock() >= requestedQuantity;
+    }
+
+    public void reduceStock(int productId, int quantity) {
+        String sql = "UPDATE products SET stock = stock - ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, quantity);
+            stmt.setInt(2, productId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void addProduct(Product product) {
-        String sql = "INSERT INTO products (id, name, category, brand, price, stock, image, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (id, name, category, brand, price, stock, image, description, is_deleted, deleted_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, false, null)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, product.getId());
@@ -137,6 +164,18 @@ public class ProductDao {
         }
     }
 
+    public void softDeleteProduct(int id, String reason) {
+        String sql = "UPDATE products SET is_deleted = true, deleted_reason = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, reason == null || reason.isBlank() ? "Xóa khỏi danh sách" : reason);
+            stmt.setInt(2, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private Product mapProduct(ResultSet rs) throws SQLException {
         Product product = new Product();
         product.setId(rs.getInt("id"));
@@ -147,6 +186,8 @@ public class ProductDao {
         product.setStock(rs.getInt("stock"));
         product.setImage(rs.getString("image"));
         product.setDescription(rs.getString("description"));
+        product.setDeleted(rs.getBoolean("is_deleted"));
+        product.setDeletedReason(rs.getString("deleted_reason"));
         return product;
     }
 }

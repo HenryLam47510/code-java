@@ -30,11 +30,11 @@ public class StatsService {
     }
 
     public BigDecimal getAverageOrderValue() {
-        int totalOrders = orderDao.getTotalOrders();
-        if (totalOrders == 0) {
+        int totalPaidOrders = orderDao.getTotalOrders();
+        if (totalPaidOrders == 0) {
             return BigDecimal.ZERO;
         }
-        return orderDao.getTotalRevenue().divide(BigDecimal.valueOf(totalOrders), 2, java.math.RoundingMode.HALF_UP);
+        return orderDao.getTotalRevenue().divide(BigDecimal.valueOf(totalPaidOrders), 2, java.math.RoundingMode.HALF_UP);
     }
 
     public BigDecimal getTotalRevenue() {

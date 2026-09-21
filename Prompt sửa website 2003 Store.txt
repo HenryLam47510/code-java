@@ -1,0 +1,631 @@
+Bạn đang làm việc trên project web quản lý cửa hàng giày **2003 Store**.
+
+Hãy **đọc và phân tích code hiện tại trước khi sửa**. Không được tự ý viết lại toàn bộ hệ thống hoặc thay đổi kiến trúc nếu không cần thiết. Ưu tiên tận dụng database, Servlet, Service, DAO, Model và giao diện hiện có.
+
+Mục tiêu: sửa và hoàn thiện các chức năng sau.
+
+### 1. QUẢN LÝ ĐƠN HÀNG
+
+* Trang "Quản lý đơn hàng" chỉ dùng để **tạo đơn hàng**.
+* Khi tạo đơn, trạng thái ban đầu là `CHỜ XÁC NHẬN`.
+* Không cho người tạo đơn tự chọn trạng thái thanh toán tại màn hình tạo đơn.
+* Các đơn `CHỜ XÁC NHẬN` sẽ xuất hiện tại mục **Đơn hàng cần xử lý**.
+
+### 2. ĐƠN HÀNG CẦN XỬ LÝ / THANH TOÁN
+
+Nhân viên vào "Đơn hàng cần xử lý" và chọn phương thức:
+
+* `TIỀN MẶT`
+* `CHUYỂN KHOẢN`
+
+Tiền mặt:
+
+* Nhân viên xác nhận đã nhận đủ tiền.
+* Sau khi xác nhận → đơn chuyển sang `ĐÃ THANH TOÁN` / `HOÀN THÀNH`.
+
+Chuyển khoản:
+
+* Hiển thị QR thanh toán.
+* Nội dung chuyển khoản phải chứa mã đơn hàng.
+* Khi thanh toán được xác nhận → đơn chuyển sang `ĐÃ THANH TOÁN` / `HOÀN THÀNH`.
+
+Không được cộng doanh thu khi đơn chưa thanh toán thành công.
+
+### 3. XÓA SẢN PHẨM KHỎI ĐƠN
+
+Không xóa vật lý dữ liệu sản phẩm khỏi database.
+
+Khi xóa sản phẩm khỏi đơn:
+
+* Bắt buộc nhân viên nhập lý do.
+* Sản phẩm được đánh dấu ẩn/xóa.
+* Nhân viên bình thường không nhìn thấy sản phẩm đã ẩn.
+* Admin và Quản lý vẫn có thể xem sản phẩm đã ẩn và lý do xóa.
+
+### 4. HỦY ĐƠN ĐÃ THANH TOÁN
+
+* Nhân viên không được xóa vật lý đơn hàng.
+* Nhân viên chỉ được ẩn đơn khỏi danh sách làm việc của mình.
+* Admin và Quản lý vẫn phải xem được:
+
+  * Đơn hàng
+  * Trạng thái
+  * Lịch sử
+  * Lý do nếu có
+
+### 5. SỬA GIÁ SAU KHI BÁN
+
+* Chỉ role `QUẢN LÝ` được phép sửa giá liên quan đến đơn hàng đã bán.
+* Nhân viên không được sửa.
+* Admin có quyền xem toàn bộ dữ liệu theo hệ thống hiện tại.
+
+### 6. PHÂN QUYỀN
+
+Chia hệ thống thành 3 role:
+
+ADMIN:
+
+* Quản trị tài khoản
+* Phân quyền
+* Audit Log
+* Cấu hình hệ thống
+* Backup / Restore
+* Bảo trì
+* Xem toàn bộ dữ liệu
+
+QUẢN LÝ:
+
+* Sản phẩm
+* Kho
+* Đơn hàng
+* Thanh toán
+* Khách hàng
+* Nhân viên
+* Doanh thu / Thống kê
+* Lịch sử
+
+NHÂN VIÊN:
+
+* Bán hàng
+* Đơn hàng
+* Thanh toán
+* Tra cứu sản phẩm
+
+Các menu/chức năng không thuộc quyền của role phải được ẩn khỏi giao diện và đồng thời phải kiểm tra quyền ở backend, không chỉ ẩn bằng frontend.
+
+Phần "Quản lý nhân viên" phải cho phép tạo tài khoản và gán role.
+
+### 7. TỒN KHO
+
+Kiểm tra logic tồn kho để không xảy ra tồn kho âm khi bán hàng.
+
+Nếu thao tác bán hàng làm số lượng tồn kho nhỏ hơn 0:
+
+* Không cho hoàn tất giao dịch.
+* Hiển thị thông báo lỗi rõ ràng.
+* Không được ghi nhận doanh thu nếu giao dịch thất bại.
+
+### 8. DOANH THU
+
+Sửa Dashboard hiện tại thành **Báo cáo doanh thu thực tế**.
+
+Doanh thu chỉ tính:
+
+`Đơn đã thanh toán thành công`
+
+Không tính:
+
+* Đơn đang chờ thanh toán
+* Đơn chưa xác nhận
+* Đơn đã hủy
+
+Dashboard cần hiển thị:
+
+* Doanh thu hôm nay
+* Doanh thu tháng này
+* Số đơn đã thanh toán
+* Doanh thu tiền mặt
+* Doanh thu chuyển khoản
+* Doanh thu theo ngày
+* Sản phẩm bán nhiều
+* Doanh thu theo khoảng thời gian
+* Đơn hủy/hoàn tiền ảnh hưởng đến doanh thu
+
+Ví dụ:
+
+DH001 - 5.000.000 - Đã thanh toán → +5.000.000
+DH002 - 3.000.000 - Chờ thanh toán → +0
+DH003 - 2.000.000 - Đã hủy → +0
+DH004 - 1.000.000 - Đã thanh toán → +1.000.000
+
+Tổng doanh thu = 6.000.000đ.
+
+### 9. DOANH THU THEO PHƯƠNG THỨC
+
+Hiển thị riêng:
+
+* Tiền mặt
+* Chuyển khoản
+
+Và có bảng chi tiết:
+
+| Ngày | Số đơn | Tiền mặt | Chuyển khoản | Doanh thu |
+| ---- | ------ | -------- | ------------ | --------- |
+
+Dữ liệu phải lấy từ database thực tế, không dùng dữ liệu hard-code.
+
+### 10. TRANG BÁO CÁO DOANH THU
+
+Tạo trang riêng:
+
+`Thống kê & Doanh thu → Báo cáo doanh thu`
+
+Có bộ lọc:
+
+* Hôm nay
+* Từ ngày
+* Đến ngày
+* Xem báo cáo
+
+Hiển thị các KPI:
+
+* Tổng doanh thu
+* Đơn đã thanh toán
+* Tiền mặt
+* Chuyển khoản
+
+Sau đó hiển thị biểu đồ doanh thu.
+
+Biểu đồ phải có:
+
+* Trục X
+* Trục Y
+* Giá trị doanh thu
+* Có thể xem doanh thu theo ngày/khoảng thời gian.
+
+### 11. HÓA ĐƠN
+
+Tạo/hoàn thiện hóa đơn bán hàng gồm 3 phần:
+
+Phần 1:
+
+* Tên cửa hàng
+* Địa chỉ
+* Thông tin liên lạc
+* Mã đơn hàng
+
+Phần 2:
+
+* Sản phẩm
+* Số lượng
+* Đơn giá
+* Thành tiền
+* Thời gian mua
+* Tổng tiền
+
+Phần 3:
+
+* QR thanh toán
+
+Nội dung chuyển khoản phải có dạng:
+
+`Thanh toán mua hàng tại cửa hàng 2003 Store + MÃ ĐƠN HÀNG`
+
+### 12. YÊU CẦU QUAN TRỌNG KHI SỬA CODE
+
+Trước khi sửa:
+
+1. Kiểm tra cấu trúc project.
+2. Xác định các Servlet/Controller, Service, DAO, Model và JSP/HTML liên quan.
+3. Kiểm tra database và các bảng hiện tại.
+4. Xác định chức năng nào đã tồn tại.
+5. Chỉ sửa hoặc bổ sung phần cần thiết.
+
+Không:
+
+* Xóa code đang hoạt động nếu không cần.
+* Tạo lại database từ đầu.
+* Thay đổi framework/kiến trúc hiện tại.
+* Hard-code dữ liệu doanh thu.
+* Chỉ kiểm tra quyền bằng giao diện frontend.
+* Xóa vật lý dữ liệu cần lưu lịch sử.
+
+Sau mỗi nhóm thay đổi, kiểm tra lại:
+
+* Compile/build project.
+* Các chức năng cũ không bị hỏng.
+* Phân quyền hoạt động đúng.
+* Database không bị mất dữ liệu.
+* Doanh thu chỉ tính đơn đã thanh toán.
+
+Nếu phát hiện phần nào trong yêu cầu **không phù hợp với cấu trúc code hoặc database hiện tại**, hãy chỉ ra file/bảng/chức năng liên quan và đề xuất cách sửa trước, thay vì tự ý phá cấu trúc hiện tại.
+
+### 13.YÊU CẦU UI/UX – THIẾT KẾ LẠI TOÀN BỘ GIAO DIỆN
+
+Hãy redesign giao diện hiện tại theo phong cách của dashboard quản lý bán hàng hiện đại giống hình ảnh tham khảo được cung cấp: code-java/anh-ui.jpg.
+
+Lưu ý: Đây là hệ thống quản lý bán hàng nội bộ tại cửa hàng 2003 Store, không phải website bán hàng online cho khách hàng. Vì vậy chỉ lấy phong cách thiết kế, bố cục và tính trực quan từ hình tham khảo, không sao chép nguyên nội dung hoặc chức năng của giao diện mẫu.
+
+Phong cách tổng thể
+Giao diện hiện đại, sạch sẽ, chuyên nghiệp.
+Ưu tiên khả năng sử dụng nhanh cho nhân viên và quản lý tại cửa hàng.
+Không thiết kế theo kiểu website thương mại điện tử dành cho khách hàng.
+Không sử dụng quá nhiều hiệu ứng animation.
+Không làm giao diện quá màu mè.
+Ưu tiên màu sắc nhẹ, tương phản rõ, dễ đọc.
+Có sidebar bên trái để điều hướng.
+Nội dung chính nằm ở khu vực bên phải.
+Các nhóm chức năng được phân chia rõ ràng.
+Card, bảng dữ liệu, biểu đồ và form phải có khoảng cách hợp lý.
+Responsive ở mức phù hợp với màn hình máy tính tại cửa hàng.
+Sidebar
+
+Thiết kế sidebar cố định bên trái.
+
+Các menu hiển thị dựa trên role người đăng nhập:
+
+ADMIN
+
+Dashboard / Báo cáo
+Sản phẩm
+Kho hàng
+Đơn hàng
+Đơn hàng cần xử lý
+Thanh toán
+Khách hàng
+Nhân viên
+Doanh thu / Thống kê
+Lịch sử / Audit Log
+Cấu hình hệ thống
+
+QUẢN LÝ
+
+Dashboard / Báo cáo
+Sản phẩm
+Kho hàng
+Đơn hàng
+Đơn hàng cần xử lý
+Thanh toán
+Khách hàng
+Nhân viên
+Doanh thu / Thống kê
+Lịch sử
+
+NHÂN VIÊN
+
+Bán hàng
+Đơn hàng
+Đơn hàng cần xử lý
+Thanh toán
+Tra cứu sản phẩm
+
+Menu không thuộc quyền của role phải được ẩn hoàn toàn.
+
+Sidebar cần có:
+
+Logo / tên 2003 STORE
+Tên hệ thống: Hệ thống quản lý cửa hàng
+Avatar/tên tài khoản đang đăng nhập
+Role của tài khoản
+Nút đăng xuất
+14. HEADER
+
+Phần header phía trên nội dung chính:
+
+Thanh tìm kiếm.
+Thông báo.
+Tên người dùng.
+Role.
+Avatar.
+Có thể thêm breadcrumb để người dùng biết mình đang ở đâu.
+
+Không cần các chức năng kiểu:
+
+Shopping cart
+Wishlist
+Customer-facing notification
+Online shopping
+
+vì đây là hệ thống nội bộ.
+
+15. DASHBOARD / BÁO CÁO
+
+Không sử dụng dashboard kiểu "Online Store" với các thông tin như Total Users, Total Products làm trọng tâm.
+
+Dashboard của 2003 Store phải tập trung vào hoạt động bán hàng thực tế.
+
+Ở đầu trang sử dụng các KPI card:
+
+DOANH THU HÔM NAY
+xx.xxx.xxx ₫
+
+ĐƠN ĐÃ THANH TOÁN
+xx đơn
+
+TIỀN MẶT
+xx.xxx.xxx ₫
+
+CHUYỂN KHOẢN
+xx.xxx.xxx ₫
+
+Có thể thêm:
+
+ĐƠN CHỜ XỬ LÝ
+xx đơn
+
+SẢN PHẨM SẮP HẾT
+xx sản phẩm
+
+Các card phải lấy dữ liệu thật từ database.
+
+16. BIỂU ĐỒ
+
+Dashboard cần có khu vực biểu đồ doanh thu.
+
+Thiết kế giống tinh thần hình tham khảo:
+
+Card lớn.
+Tiêu đề rõ ràng.
+Bộ lọc Ngày / Tuần / Tháng.
+Biểu đồ doanh thu.
+Trục X hiển thị ngày/thời gian.
+Trục Y hiển thị số tiền.
+Tooltip khi hover.
+Hiển thị giá trị rõ ràng.
+
+Không sử dụng biểu đồ chỉ để trang trí.
+
+Biểu đồ phải phản ánh dữ liệu thật từ database.
+
+17. ĐƠN HÀNG
+
+Trang danh sách đơn hàng ưu tiên bảng dữ liệu, vì đây là phần mềm nội bộ.
+
+Bảng nên có:
+
+Mã đơn
+Khách hàng
+Ngày tạo
+Tổng tiền
+Phương thức thanh toán
+Trạng thái
+Nhân viên xử lý
+Thao tác
+
+Sử dụng badge màu cho trạng thái:
+
+CHỜ XÁC NHẬN
+CHỜ THANH TOÁN
+ĐÃ THANH TOÁN
+HOÀN THÀNH
+ĐÃ HỦY
+
+Có:
+
+Search
+Filter
+Sort
+Pagination
+
+Không biến danh sách đơn hàng thành các card quá lớn như website bán hàng online.
+
+18. ĐƠN HÀNG CẦN XỬ LÝ
+
+Đây là chức năng quan trọng đối với nhân viên.
+
+Thiết kế trang tập trung vào thao tác nhanh:
+
+Đơn hàng #DH001
+Khách hàng: Nguyễn Văn A
+Tổng tiền: 1.250.000 ₫
+
+[ TIỀN MẶT ]
+
+[ CHUYỂN KHOẢN ]
+
+[ XEM CHI TIẾT ]
+
+Đơn đang chờ xử lý phải nổi bật nhưng không gây rối mắt.
+
+Nếu chọn chuyển khoản → hiển thị khu vực QR.
+
+Nếu chọn tiền mặt → hiển thị xác nhận đã nhận đủ tiền.
+
+19. SẢN PHẨM / KHO
+
+Thiết kế theo kiểu quản trị nội bộ:
+
+Bảng sản phẩm.
+Hình sản phẩm nhỏ.
+Mã sản phẩm.
+Tên.
+Loại.
+Size.
+Giá.
+Tồn kho.
+Trạng thái.
+Thao tác.
+
+Tồn kho thấp có cảnh báo trực quan.
+
+Ví dụ:
+
+Còn 3 đôi     → cảnh báo
+Còn 0 đôi     → hết hàng
+
+Không dùng thiết kế quá giống trang bán hàng cho khách.
+
+20. FORM VÀ MODAL
+
+Tất cả form thêm/sửa/xóa phải có UI thống nhất.
+
+Ví dụ:
+
+┌─────────────────────────────┐
+│ Thêm sản phẩm               │
+├─────────────────────────────┤
+│ Mã sản phẩm                 │
+│ [.........................] │
+│                             │
+│ Tên sản phẩm                │
+│ [.........................] │
+│                             │
+│ Giá                         │
+│ [.........................] │
+│                             │
+│        [Hủy] [Lưu]          │
+└─────────────────────────────┘
+
+Các thao tác nguy hiểm như:
+
+Xóa
+Hủy đơn
+Sửa giá
+Xác nhận thanh toán
+
+phải có confirmation modal và thông báo rõ ràng.
+
+21. THÔNG BÁO
+
+Sử dụng toast/notification thống nhất cho:
+
+Thành công
+Lỗi
+Cảnh báo
+Xác nhận
+
+Ví dụ:
+
+✓ Thanh toán đơn DH001 thành công
+
+⚠ Sản phẩm SP001 chỉ còn 2 sản phẩm
+
+✕ Không thể thanh toán vì tồn kho không đủ
+
+Không sử dụng alert mặc định của trình duyệt nếu có thể thay bằng UI notification hiện đại.
+
+22. RESPONSIVE VÀ TÍNH NHẤT QUÁN
+
+Tất cả trang phải sử dụng cùng một design system:
+
+Font
+Màu
+Button
+Input
+Table
+Card
+Modal
+Badge
+Icon
+Spacing
+Border radius
+Shadow
+
+Không để mỗi trang có một phong cách khác nhau.
+
+Ưu tiên màn hình desktop vì đây là hệ thống nội bộ chạy trên máy tính tại cửa hàng.
+
+23. QUAN TRỌNG – KHÔNG THAY ĐỔI LOGIC
+
+Khi redesign UI:
+
+Không được làm thay đổi business logic hiện tại.
+
+Không được:
+
+Xóa Servlet/Service/DAO đang hoạt động.
+Thay đổi database chỉ vì mục đích giao diện.
+Thay đổi URL mapping nếu không cần.
+Thay đổi tên field backend đang sử dụng nếu không cần.
+Hard-code dữ liệu chỉ để giao diện đẹp.
+Tạo dữ liệu giả thay cho dữ liệu thật.
+
+Nếu cần thay đổi backend để UI hiển thị được dữ liệu, hãy kiểm tra code hiện tại và chỉ bổ sung phần cần thiết.
+
+24. MỤC TIÊU CUỐI CÙNG
+
+Hãy làm cho website có cảm giác giống một phần mềm quản lý cửa hàng chuyên nghiệp, không phải một website bán giày online.
+
+Ưu tiên:
+
+Nhanh → rõ → dễ thao tác → dễ đọc → chuyên nghiệp → nhất quán.
+
+Hình ảnh tham khảo chỉ dùng để lấy cảm hứng về:
+
+Bố cục sidebar
+Header
+Card
+Dashboard
+Biểu đồ
+Khoảng trắng
+Typography
+Visual hierarchy
+Cách tổ chức thông tin
+
+Không sao chép nguyên thiết kế hoặc nội dung của hình ảnh.
+24. QR được tạo cho từng đơn hàng → tiền + nội dung có sẵn
+
+Đây mới là flow bạn đang muốn làm cho 2003 Store:
+
+Tạo đơn
+   ↓
+DH20260921-0001
+   ↓
+Tổng tiền: 250.000đ
+   ↓
+Hệ thống tạo QR
+   ↓
+Khách quét
+   ↓
+App ngân hàng đã có:
+   Số tiền: 250.000đ
+   Nội dung: Thanh toán mua hàng tại 2003 Store DH20260921-0001
+   ↓
+Khách xác nhận
+   ↓
+Ngân hàng chuyển tiền
+   ↓
+Hệ thống nhận diện giao dịch
+   ↓
+Đơn DH20260921-0001 → Đã thanh toán
+
+Điểm rất quan trọng là mã đơn trong nội dung chuyển khoản. Nó giúp hệ thống biết:
+
+"Khoản tiền 250.000đ này là của đơn DH20260921-0001."
+
+Vì vậy ý tưởng trong yêu cầu trước của bạn:
+
+QR thanh toán với nội dung Thanh toán mua hàng tại cửa hàng 2003 Store + mã đơn hàng
+
+là hợp lý với flow này.
+
+Vì vậy UI 2003 Store có thể thiết kế thế này
+
+Không nhất thiết phải có:
+
+○ Chuyển khoản
+○ QR
+
+Mà nên là:
+
+PHƯƠNG THỨC THANH TOÁN
+
+○ Tiền mặt
+
+○ Chuyển khoản
+   ├── Nhập thông tin chuyển khoản thủ công
+   └── Thanh toán bằng QR
+
+Hoặc đơn giản hơn, với hệ thống của bạn:
+
+○ Tiền mặt
+○ Chuyển khoản qua QR
+
+Khi chọn chuyển khoản qua QR, hệ thống tự tạo QR theo mã đơn + số tiền, rồi chờ xác nhận giao dịch.
+
+Đây cũng là lý do mình nghĩ không nên gọi QR là một "phương thức thanh toán" ngang hàng với tiền mặt/chuyển khoản trong database. QR chỉ là kênh/thao tác thực hiện thanh toán chuyển khoản.
+
+làm API nhận biến động số dư, với flow:
+
+Tạo đơn → QR → khách chuyển khoản → API nhận giao dịch → đối chiếu mã đơn + số tiền → tự động hoàn thành đơn → thông báo cho nhân viên
+

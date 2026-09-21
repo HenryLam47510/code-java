@@ -18,17 +18,68 @@ public class DatabaseInitializer {
                     "price DECIMAL(12,0), " +
                     "stock INT, " +
                     "image VARCHAR(500), " +
-                    "description TEXT)"
+                    "description TEXT, " +
+                    "is_deleted BOOLEAN DEFAULT FALSE, " +
+                    "deleted_reason VARCHAR(255))"
             );
+
+            try {
+                stmt.executeUpdate("ALTER TABLE products ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE products ADD COLUMN deleted_reason VARCHAR(255)");
+            } catch (Exception ignored) {
+            }
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS orders (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "order_code VARCHAR(30) UNIQUE, " +
                     "customer_name VARCHAR(255), " +
                     "phone VARCHAR(20), " +
                     "status VARCHAR(50), " +
+                    "payment_method VARCHAR(50), " +
+                    "payment_status VARCHAR(50) DEFAULT 'CHUA_THANH_TOAN', " +
+                    "transaction_note VARCHAR(255), " +
+                    "qr_code TEXT, " +
                     "total_amount DECIMAL(12,0), " +
+                    "is_hidden BOOLEAN DEFAULT FALSE, " +
+                    "cancel_reason VARCHAR(255), " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
             );
+
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN order_code VARCHAR(30)");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("CREATE UNIQUE INDEX idx_orders_order_code ON orders(order_code)");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50)");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN payment_status VARCHAR(50) DEFAULT 'CHUA_THANH_TOAN'");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN transaction_note VARCHAR(255)");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN qr_code TEXT");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN is_hidden BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN cancel_reason VARCHAR(255)");
+            } catch (Exception ignored) {
+            }
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS order_items (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -192,6 +243,24 @@ public class DatabaseInitializer {
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (3, 'products', true)");
             }
 
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS order_code_sequence (date_key VARCHAR(8) PRIMARY KEY, next_sequence INT NOT NULL DEFAULT 0)");
+
+            try (ResultSet rs = stmt.executeQuery("SELECT id, created_at FROM orders WHERE order_code IS NULL OR order_code = '' ORDER BY created_at, id")) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String dateKey = rs.getTimestamp("created_at").toLocalDateTime().toLocalDate().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+                    int sequence = 1;
+                    try (ResultSet seqRs = stmt.executeQuery("SELECT COALESCE(MAX(CAST(SUBSTRING(order_code, 11) AS UNSIGNED)), 0) AS max_seq FROM orders WHERE order_code LIKE 'DH" + dateKey + "-%'")) {
+                        if (seqRs.next()) {
+                            sequence = seqRs.getInt("max_seq") + 1;
+                        }
+                    }
+                    String orderCode = com._2003store.service.OrderCodeGenerator.generateForDate(java.time.LocalDate.parse(dateKey, java.time.format.DateTimeFormatter.BASIC_ISO_DATE), sequence);
+                    stmt.executeUpdate("UPDATE orders SET order_code = '" + orderCode + "' WHERE id = " + id);
+                }
+            } catch (Exception ignored) {
+            }
+
             long orderCount = 0;
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM orders")) {
                 if (rs.next()) {
@@ -201,9 +270,9 @@ public class DatabaseInitializer {
 
             if (orderCount == 0) {
                 String[] orderInserts = {
-                        "INSERT INTO orders (customer_name, phone, status, total_amount) VALUES ('Nguyen Van A', '0901234567', 'Hoan thanh', 5499000)",
-                        "INSERT INTO orders (customer_name, phone, status, total_amount) VALUES ('Tran Thi B', '0912345678', 'Dang giao', 3999000)",
-                        "INSERT INTO orders (customer_name, phone, status, total_amount) VALUES ('Le Van C', '0987654321', 'Cho xac nhan', 7990000)"
+                        "INSERT INTO orders (customer_name, phone, status, payment_method, payment_status, transaction_note, qr_code, total_amount, order_code) VALUES ('Nguyen Van A', '0901234567', 'Hoan thanh', 'BANK_TRANSFER', 'DA_THANH_TOAN', 'Chuyen khoan theo ma HD01', 'QR_001', 5499000, 'DH20260921-0001')",
+                        "INSERT INTO orders (customer_name, phone, status, payment_method, payment_status, transaction_note, qr_code, total_amount, order_code) VALUES ('Tran Thi B', '0912345678', 'Dang giao', 'COD', 'CHUA_THANH_TOAN', 'Thanh toan khi nhan hang', 'QR_002', 3999000, 'DH20260921-0002')",
+                        "INSERT INTO orders (customer_name, phone, status, payment_method, payment_status, transaction_note, qr_code, total_amount, order_code) VALUES ('Le Van C', '0987654321', 'Cho xac nhan', 'MOMO', 'CHUA_THANH_TOAN', 'Chua xac nhan thanh toan', 'QR_003', 7990000, 'DH20260921-0003')"
                 };
 
                 for (String sql : orderInserts) {

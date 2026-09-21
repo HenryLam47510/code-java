@@ -80,6 +80,48 @@ public class EmployeeDao {
         return null;
     }
 
+    public Employee getEmployeeByUsername(String username) {
+        String sql = "SELECT * FROM employees WHERE username = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Employee employee = new Employee();
+                    employee.setId(rs.getInt("id"));
+                    employee.setFullName(rs.getString("full_name"));
+                    employee.setUsername(rs.getString("username"));
+                    employee.setPassword(rs.getString("password"));
+                    employee.setRole(rs.getString("role"));
+                    employee.setPosition(rs.getString("position"));
+                    employee.setPhone(rs.getString("phone"));
+                    employee.setPermissions(getPermissionsForEmployee(employee.getId()));
+                    return employee;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean hasPermission(String username, String module) {
+        String sql = "SELECT COUNT(*) FROM employee_permissions ep JOIN employees e ON ep.employee_id = e.id WHERE e.username = ? AND LOWER(ep.module_name) = LOWER(?) AND ep.allowed = true";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, module);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public List<String> getPermissionsForEmployee(int employeeId) {
         List<String> permissions = new ArrayList<>();
         String sql = "SELECT module_name FROM employee_permissions WHERE employee_id = ? ORDER BY module_name ASC";

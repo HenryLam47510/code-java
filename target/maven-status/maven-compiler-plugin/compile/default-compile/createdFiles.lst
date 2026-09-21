@@ -18,6 +18,7 @@ com\_2003store\dao\StockReceiptDao.class
 com\_2003store\dao\ProductDao.class
 com\_2003store\servlet\InventoryCheckServlet.class
 com\_2003store\model\InventoryCheck.class
+com\_2003store\service\OrderCodeGenerator.class
 com\_2003store\servlet\ReportServlet.class
 com\_2003store\model\StockIssue.class
 com\_2003store\config\DatabaseConfig.class
@@ -41,6 +42,7 @@ com\_2003store\servlet\StaffReportServlet.class
 com\_2003store\servlet\ProductServlet.class
 com\_2003store\servlet\EmployeeServlet.class
 com\_2003store\servlet\DashboardServlet.class
+com\_2003store\service\OrderStatus.class
 com\_2003store\model\Employee.class
 com\_2003store\dao\InventoryCheckDao.class
 com\_2003store\model\InventoryReportItem.class
@@ -48,4 +50,5 @@ com\_2003store\dao\DatabaseInitializer.class
 com\_2003store\model\Invoice.class
 com\_2003store\model\Supplier.class
 com\_2003store\service\AuthService.class
+com\_2003store\model\OrderNotification.class
 com\_2003store\dao\CustomerDao.class

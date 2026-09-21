@@ -19,18 +19,28 @@ public class ReportServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String from = request.getParameter("from");
         String to = request.getParameter("to");
-
-        if (from == null || from.isBlank()) {
-            from = java.time.LocalDate.now().minusDays(6).toString();
-        }
-        if (to == null || to.isBlank()) {
-            to = java.time.LocalDate.now().toString();
+        String view = request.getParameter("view");
+        if (view == null || view.isBlank()) {
+            view = "day";
         }
 
-        List<RevenuePoint> dailyRevenue = reportDao.getRevenueByDateRange(from, to);
-        request.setAttribute("dailyRevenue", dailyRevenue);
+        if ("day".equals(view)) {
+            if (from == null || from.isBlank()) {
+                from = java.time.LocalDate.now().minusDays(6).toString();
+            }
+            if (to == null || to.isBlank()) {
+                to = java.time.LocalDate.now().toString();
+            }
+            List<RevenuePoint> dailyRevenue = reportDao.getRevenueByDateRange(from, to);
+            request.setAttribute("revenueSeries", dailyRevenue);
+            request.setAttribute("dailyRevenue", dailyRevenue);
+        } else {
+            request.setAttribute("revenueSeries", reportDao.getRevenueSeries(view));
+        }
+
         request.setAttribute("from", from);
         request.setAttribute("to", to);
+        request.setAttribute("selectedView", view);
         request.getRequestDispatcher("/reports.jsp").forward(request, response);
     }
 }
