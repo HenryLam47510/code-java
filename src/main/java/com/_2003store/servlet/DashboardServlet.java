@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet("/dashboard")
+@WebServlet({"/dashboard", "/dashboard/admin", "/dashboard/manager", "/dashboard/employee"})
 public class DashboardServlet extends HttpServlet {
     private final StatsService statsService = new StatsService();
     private final AuthService authService = new AuthService();
@@ -32,6 +32,22 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
+        String dashboardKey = AuthService.getDashboardKey(user);
+        String requestedPath = request.getServletPath();
+        if ("/dashboard/admin".equals(requestedPath) && !"ADMIN".equals(AuthService.normalizeRole(user.getRole()))) {
+            response.sendRedirect(request.getContextPath() + AuthService.getDashboardPath(user));
+            return;
+        }
+        if ("/dashboard/manager".equals(requestedPath) && !"MANAGER".equals(AuthService.normalizeRole(user.getRole()))) {
+            response.sendRedirect(request.getContextPath() + AuthService.getDashboardPath(user));
+            return;
+        }
+        if ("/dashboard/employee".equals(requestedPath) && !"EMPLOYEE".equals(AuthService.normalizeRole(user.getRole()))) {
+            response.sendRedirect(request.getContextPath() + AuthService.getDashboardPath(user));
+            return;
+        }
+
+        request.setAttribute("dashboardKey", dashboardKey);
         request.setAttribute("products", statsService.getRecentOrders());
         request.setAttribute("totalProducts", statsService.getTotalProducts());
         request.setAttribute("totalStock", statsService.getTotalStock());

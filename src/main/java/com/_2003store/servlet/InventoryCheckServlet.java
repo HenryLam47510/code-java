@@ -4,6 +4,8 @@ import com._2003store.dao.InventoryCheckDao;
 import com._2003store.dao.ProductDao;
 import com._2003store.model.InventoryCheck;
 import com._2003store.model.Product;
+import com._2003store.model.User;
+import com._2003store.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,9 +19,20 @@ import java.util.List;
 public class InventoryCheckServlet extends HttpServlet {
     private final ProductDao productDao = new ProductDao();
     private final InventoryCheckDao inventoryCheckDao = new InventoryCheckDao();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!authService.hasAccess(user, "inventory-check")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền kiểm kho.");
+            return;
+        }
+
         List<Product> products = productDao.getAllProducts();
         List<InventoryCheck> checks = inventoryCheckDao.getAllChecks();
         request.setAttribute("products", products);
@@ -29,6 +42,16 @@ public class InventoryCheckServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!authService.hasAccess(user, "inventory-check")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền kiểm kho.");
+            return;
+        }
+
         String productIdParam = request.getParameter("productId");
         String countedParam = request.getParameter("countedQuantity");
         String countedBy = request.getParameter("countedBy");

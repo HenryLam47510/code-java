@@ -1,6 +1,26 @@
 <%@ page import="com._2003store.model.Product" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    com._2003store.model.User sessionUser = (com._2003store.model.User) session.getAttribute("user");
+    String userRole = sessionUser != null ? sessionUser.getRole() : "";
+    String dashboardRoute = "/dashboard/employee";
+    if ("ADMIN".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/admin";
+    } else if ("MANAGER".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/manager";
+    }
+
+    com._2003store.service.AuthService authService = new com._2003store.service.AuthService();
+    boolean canAccessOrders = sessionUser != null && authService.hasAccess(sessionUser, "orders");
+    boolean canAccessProducts = sessionUser != null && authService.hasAccess(sessionUser, "products");
+    boolean canAccessCustomers = sessionUser != null && authService.hasAccess(sessionUser, "customers");
+    boolean canAccessReports = sessionUser != null && authService.hasAccess(sessionUser, "reports");
+    boolean canAccessStaffReport = sessionUser != null && authService.hasAccess(sessionUser, "staff-report");
+    boolean canAccessEmployees = sessionUser != null && authService.hasAccess(sessionUser, "employees");
+    boolean canAccessInventory = sessionUser != null && authService.hasAccess(sessionUser, "inventory-check");
+    boolean canAccessSuppliers = sessionUser != null && authService.hasAccess(sessionUser, "suppliers");
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -13,37 +33,48 @@
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/dashboard">Tổng quan</a>
-                    <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                    <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+            <% if ("ADMIN".equalsIgnoreCase(userRole)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/admin">Admin</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/admin">Tổng quan</a>
+                        <a href="${pageContext.request.contextPath}/employees">Quản lý nhân sự</a>
+                        <a href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
+                        <a class="active" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
+                        <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+                        <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
+                        <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+                        <a href="${pageContext.request.contextPath}/login-history">Nhật ký hệ thống</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group active">
-                <a class="nav-main" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                <div class="nav-submenu">
-                    <a class="active" href="${pageContext.request.contextPath}/products">Tất cả sản phẩm</a>
-                    <a href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-                    <a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
+                <% if (canAccessInventory) { %><a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a><% } %>
+                <% if (canAccessSuppliers) { %><a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a><% } %>
+            <% } else if ("MANAGER".equalsIgnoreCase(userRole)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/manager">Quản lý</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/manager">Tổng quan</a>
+                        <% if (canAccessOrders) { %><a href="${pageContext.request.contextPath}/orders">Bán hàng & Đơn hàng</a><% } %>
+                        <% if (canAccessProducts) { %><a class="active" href="${pageContext.request.contextPath}/products">Sản phẩm</a><% } %>
+                        <% if (canAccessCustomers) { %><a href="${pageContext.request.contextPath}/customers">Khách hàng</a><% } %>
+                        <% if (canAccessInventory) { %><a href="${pageContext.request.contextPath}/stock">Nhập kho</a><a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a><a href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a><% } %>
+                        <% if (canAccessSuppliers) { %><a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a><% } %>
+                        <% if (canAccessReports) { %><a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a><a href="${pageContext.request.contextPath}/reports">Doanh thu</a><% } %>
+                        <% if (canAccessStaffReport) { %><a href="${pageContext.request.contextPath}/staff-report">Nhân sự</a><% } %>
+                        <% if (canAccessEmployees) { %><a href="${pageContext.request.contextPath}/employees">Nhân viên</a><% } %>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/orders">Danh sách</a>
-                    <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
-                    <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+            <% } else { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/employee">Bán hàng</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/employee">Tổng quan</a>
+                        <% if (canAccessOrders) { %><a href="${pageContext.request.contextPath}/orders">Tạo đơn</a><a href="${pageContext.request.contextPath}/orders">Đơn hàng</a><% } %>
+                        <% if (canAccessProducts) { %><a class="active" href="${pageContext.request.contextPath}/products">Sản phẩm</a><% } %>
+                        <% if (canAccessCustomers) { %><a href="${pageContext.request.contextPath}/customers">Khách hàng</a><% } %>
+                    </div>
                 </div>
-            </div>
-            <a class="single-link" href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
+            <% } %>
             <div class="nav-divider"></div>
             <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
         </nav>

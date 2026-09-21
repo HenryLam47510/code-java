@@ -35,6 +35,20 @@ class BusinessRulesTest {
     }
 
     @Test
+    void shouldRecognizeTransferPaymentState() {
+        assertTrue(OrderStatus.isTransferPayment("BANK_TRANSFER"));
+        assertTrue(OrderStatus.isPaymentConfirmed("DA_THANH_TOAN"));
+        assertTrue(OrderStatus.isRevenueEligible("Da thanh toan", "DA_THANH_TOAN"));
+    }
+
+    @Test
+    void shouldNormalizeCashierPaymentPermission() {
+        assertEquals("payment_confirm", AuthService.normalizeModule("PAYMENT_CONFIRM"));
+        assertEquals("payment_confirm", AuthService.normalizeModule("payment-confirm"));
+        assertEquals("EMPLOYEE", AuthService.normalizeRole("staff"));
+    }
+
+    @Test
     void shouldGenerateOrderCodeInRequiredFormat() {
         String code = OrderCodeGenerator.generateForDate(LocalDate.of(2026, 9, 21), 1);
         assertEquals("DH20260921-0001", code);

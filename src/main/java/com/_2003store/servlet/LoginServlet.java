@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
         if (user != null) {
             request.getSession().setAttribute("user", user);
             loginHistoryDao.logLogin(username, user.getFullName(), "SUCCESS", request.getRemoteAddr());
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            response.sendRedirect(request.getContextPath() + AuthService.getDashboardPath(user));
         } else {
             if (username != null && !username.isBlank()) {
                 loginHistoryDao.logLogin(username, username, "FAILED", request.getRemoteAddr());

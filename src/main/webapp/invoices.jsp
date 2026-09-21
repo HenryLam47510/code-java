@@ -2,6 +2,16 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    com._2003store.model.User sessionUser = (com._2003store.model.User) session.getAttribute("user");
+    String userRole = sessionUser != null ? sessionUser.getRole() : "";
+    String dashboardRoute = "/dashboard/employee";
+    if ("ADMIN".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/admin";
+    } else if ("MANAGER".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/manager";
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -15,9 +25,9 @@
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
             <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+                <a class="nav-main" href="${pageContext.request.contextPath}<%= dashboardRoute %>">Dashboard</a>
                 <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/dashboard">Tổng quan</a>
+                    <a href="${pageContext.request.contextPath}<%= dashboardRoute %>">Tổng quan</a>
                     <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
                     <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
                 </div>

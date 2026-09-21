@@ -4,6 +4,8 @@ import com._2003store.dao.ProductDao;
 import com._2003store.dao.StockReceiptDao;
 import com._2003store.model.Product;
 import com._2003store.model.StockReceipt;
+import com._2003store.model.User;
+import com._2003store.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,9 +20,20 @@ import java.util.List;
 public class StockReceiptServlet extends HttpServlet {
     private final StockReceiptDao stockReceiptDao = new StockReceiptDao();
     private final ProductDao productDao = new ProductDao();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!authService.isAdmin(user) && !authService.isManager(user)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền nhập kho.");
+            return;
+        }
+
         List<Product> products = productDao.getAllProducts();
         List<StockReceipt> receipts = stockReceiptDao.getAllReceipts();
         request.setAttribute("products", products);
@@ -31,6 +44,16 @@ public class StockReceiptServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!authService.isAdmin(user) && !authService.isManager(user)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền nhập kho.");
+            return;
+        }
+
         String productIdParam = request.getParameter("productId");
         String supplier = request.getParameter("supplier");
         String quantityParam = request.getParameter("quantity");

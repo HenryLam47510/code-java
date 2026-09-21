@@ -331,26 +331,26 @@ public class OrderDao {
                 String paymentStatus = rs.getString("payment_status");
                 String code = orderCode == null || orderCode.isBlank() ? "DH" + rs.getInt("id") : orderCode;
 
-                if (OrderStatus.PENDING_CONFIRMATION.equals(orderStatus) || OrderStatus.IN_TRANSIT.equals(orderStatus)) {
+                if (OrderStatus.PENDING_CONFIRMATION.equalsIgnoreCase(orderStatus) || OrderStatus.PENDING_PAYMENT.equalsIgnoreCase(orderStatus)) {
                     OrderNotification notification = new OrderNotification();
                     notification.setOrderId(rs.getInt("id"));
                     notification.setOrderCode(code);
-                    notification.setType("Đơn hàng mới cần xử lý");
+                    notification.setType("Đơn hàng mới");
                     notification.setTitle("Đơn hàng mới cần xử lý");
-                    notification.setMessage("Đơn hàng " + code + " đang chờ thanh toán.");
-                    notification.setStatus("Chờ thanh toán");
+                    notification.setMessage("Đơn hàng " + code + " đang chờ xác nhận thanh toán.");
+                    notification.setStatus("Chờ xác nhận");
                     notification.setCreatedAt(rs.getTimestamp("created_at"));
                     notifications.add(notification);
                 }
 
-                if ("BANK_TRANSFER".equalsIgnoreCase(paymentMethod) && ("DA_THANH_TOAN".equalsIgnoreCase(paymentStatus) || OrderStatus.PAID.equalsIgnoreCase(orderStatus) || OrderStatus.COMPLETED.equalsIgnoreCase(orderStatus))) {
+                if (OrderStatus.BANK_TRANSFER.equalsIgnoreCase(paymentMethod) && (OrderStatus.PAID_PAYMENT.equalsIgnoreCase(paymentStatus) || OrderStatus.PAID.equalsIgnoreCase(orderStatus) || OrderStatus.COMPLETED.equalsIgnoreCase(orderStatus))) {
                     OrderNotification notification = new OrderNotification();
                     notification.setOrderId(rs.getInt("id"));
                     notification.setOrderCode(code);
-                    notification.setType("Đã nhận thanh toán");
-                    notification.setTitle("Đã nhận thanh toán");
-                    notification.setMessage("Đơn hàng " + code + " đã nhận được thanh toán chuyển khoản.");
-                    notification.setStatus("Đã thanh toán");
+                    notification.setType("Chuyển khoản");
+                    notification.setTitle("Đã nhận thanh toán chuyển khoản");
+                    notification.setMessage("Đơn hàng " + code + " đã xác nhận thanh toán qua VietQR.");
+                    notification.setStatus("Đã xác nhận");
                     notification.setCreatedAt(rs.getTimestamp("created_at"));
                     notifications.add(notification);
                 }

@@ -1,12 +1,38 @@
 <%@ page import="com._2003store.model.Order" %>
 <%@ page import="com._2003store.model.OrderNotification" %>
 <%@ page import="com._2003store.model.RevenuePoint" %>
+<%@ page import="com._2003store.model.User" %>
+<%@ page import="com._2003store.service.AuthService" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.math.BigDecimal" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    User currentUser = (User) session.getAttribute("user");
+    String dashboardKey = (String) request.getAttribute("dashboardKey");
+    AuthService authService = new AuthService();
+    if (dashboardKey == null && currentUser != null) {
+        dashboardKey = AuthService.getDashboardKey(currentUser);
+    }
+    if (dashboardKey == null) {
+        dashboardKey = "employee";
+    }
+    boolean isAdmin = currentUser != null && authService.isAdmin(currentUser);
+    boolean isManager = currentUser != null && authService.isManager(currentUser);
+    boolean isEmployee = currentUser != null && authService.isEmployee(currentUser);
+    boolean canAccessOrders = currentUser != null && authService.hasAccess(currentUser, "orders");
+    boolean canAccessProducts = currentUser != null && authService.hasAccess(currentUser, "products");
+    boolean canAccessCustomers = currentUser != null && authService.hasAccess(currentUser, "customers");
+    boolean canAccessReports = currentUser != null && authService.hasAccess(currentUser, "reports");
+    boolean canAccessStaffReport = currentUser != null && authService.hasAccess(currentUser, "staff-report");
+    boolean canAccessEmployees = currentUser != null && authService.hasAccess(currentUser, "employees");
+    boolean canAccessInventory = currentUser != null && authService.hasAccess(currentUser, "inventory-check");
+    boolean canAccessSuppliers = currentUser != null && authService.hasAccess(currentUser, "suppliers");
+    boolean canAccessLoginHistory = currentUser != null && authService.hasAccess(currentUser, "login-history");
+    boolean canConfirmPayment = currentUser != null && authService.hasAccess(currentUser, "payment_confirm");
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -19,32 +45,90 @@
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
-            <div class="nav-group active">
-                <a class="nav-main" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-                <div class="nav-submenu">
-                    <a class="active" href="${pageContext.request.contextPath}/dashboard">Tổng quan</a>
-                    <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                    <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+            <% if ("admin".equals(dashboardKey)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/admin">Admin</a>
+                    <div class="nav-submenu">
+                        <a class="active" href="${pageContext.request.contextPath}/dashboard/admin">Tổng quan</a>
+                        <a href="${pageContext.request.contextPath}/employees">Quản lý nhân sự</a>
+                        <a href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
+                        <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
+                        <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+                        <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
+                        <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+                        <a href="${pageContext.request.contextPath}/login-history">Nhật ký hệ thống</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/products">Tất cả sản phẩm</a>
-                    <a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-                    <a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
+                <% if (canAccessInventory) { %>
+                    <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
+                <% } %>
+                <% if (canAccessSuppliers) { %>
+                    <a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
+                <% } %>
+                <% if (canAccessReports) { %>
+                    <a class="single-link" href="${pageContext.request.contextPath}/reports">Báo cáo</a>
+                <% } %>
+            <% } else if ("manager".equals(dashboardKey)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/manager">Quản lý</a>
+                    <div class="nav-submenu">
+                        <a class="active" href="${pageContext.request.contextPath}/dashboard/manager">Tổng quan</a>
+                        <% if (canAccessOrders) { %>
+                            <a href="${pageContext.request.contextPath}/orders">Bán hàng & Đơn hàng</a>
+                        <% } %>
+                        <% if (canAccessOrders) { %>
+                            <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
+                        <% } %>
+                        <% if (canAccessProducts) { %>
+                            <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
+                        <% } %>
+                        <% if (canAccessCustomers) { %>
+                            <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+                        <% } %>
+                        <% if (canAccessInventory) { %>
+                            <a href="${pageContext.request.contextPath}/stock">Nhập kho</a>
+                            <a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
+                            <a href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
+                        <% } %>
+                        <% if (canAccessSuppliers) { %>
+                            <a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
+                        <% } %>
+                        <% if (canAccessReports) { %>
+                            <a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
+                            <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
+                        <% } %>
+                        <% if (canAccessStaffReport) { %>
+                            <a href="${pageContext.request.contextPath}/staff-report">Nhân sự</a>
+                        <% } %>
+                        <% if (canAccessEmployees) { %>
+                            <a href="${pageContext.request.contextPath}/employees">Nhân viên</a>
+                        <% } %>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/orders">Danh sách đơn hàng</a>
-                    <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
+            <% } else { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/employee">Bán hàng</a>
+                    <div class="nav-submenu">
+                        <a class="active" href="${pageContext.request.contextPath}/dashboard/employee">Tổng quan</a>
+                        <% if (canAccessOrders) { %>
+                            <a href="${pageContext.request.contextPath}/orders">Tạo đơn</a>
+                            <a href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
+                        <% } %>
+                        <% if (canAccessProducts) { %>
+                            <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
+                        <% } %>
+                        <% if (canAccessCustomers) { %>
+                            <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+                        <% } %>
+                        <% if (canConfirmPayment) { %>
+                            <a href="${pageContext.request.contextPath}/orders">Xác nhận thanh toán</a>
+                        <% } %>
+                    </div>
                 </div>
-            </div>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/employees">Nhân viên</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/login-history">Lịch sử đăng nhập</a>
+                <% if (canAccessProducts) { %>
+                    <a class="single-link" href="${pageContext.request.contextPath}/products">Xem sản phẩm</a>
+                <% } %>
+            <% } %>
             <div class="nav-divider"></div>
             <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
         </nav>
@@ -66,7 +150,15 @@
                         <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>
                         <div>
                             <strong>${sessionScope.user.fullName}</strong>
-                            <small>${sessionScope.user.role}</small>
+                            <small>
+                                <% if ("admin".equals(dashboardKey)) { %>
+                                    ADMIN
+                                <% } else if ("manager".equals(dashboardKey)) { %>
+                                    MANAGER
+                                <% } else { %>
+                                    EMPLOYEE
+                                <% } %>
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -186,10 +278,10 @@
         </div>
 
         <aside class="right-rail">
-            <div class="notification-card">
+            <div class="notification-card" id="dashboardNotificationCard">
                 <div class="notification-header">
                     <h4>Thông báo</h4>
-                    <button class="dismiss-btn" type="button">Tắt</button>
+                    <button class="dismiss-btn" type="button" onclick="document.getElementById('dashboardNotificationCard').style.display='none'">Tắt</button>
                 </div>
                 <%
                     List<OrderNotification> notifications = (List<OrderNotification>) request.getAttribute("notifications");
@@ -209,6 +301,12 @@
                     }
                 %>
             </div>
+            <script>
+                setTimeout(function () {
+                    const card = document.getElementById('dashboardNotificationCard');
+                    if (card) card.style.display = 'none';
+                }, 15000);
+            </script>
 
             <div class="order-card">
                 <div class="mini-row">

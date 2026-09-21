@@ -212,7 +212,8 @@ public class DatabaseInitializer {
             if (employeeCount == 0) {
                 stmt.executeUpdate("INSERT INTO employees (full_name, username, password, role, position, phone) VALUES ('Quản trị viên 2003 Store', 'admin', '123456', 'ADMIN', 'Quản trị', '0901000001')");
                 stmt.executeUpdate("INSERT INTO employees (full_name, username, password, role, position, phone) VALUES ('Quản lý kho 2003 Store', 'manager', '123456', 'MANAGER', 'Quản lý kho', '0901000002')");
-                stmt.executeUpdate("INSERT INTO employees (full_name, username, password, role, position, phone) VALUES ('Nhân viên bán hàng', 'staff', '123456', 'STAFF', 'Nhân viên', '0901000003')");
+                stmt.executeUpdate("INSERT INTO employees (full_name, username, password, role, position, phone) VALUES ('Nhân viên bán hàng', 'staff', '123456', 'EMPLOYEE', 'Nhân viên', '0901000003')");
+                stmt.executeUpdate("INSERT INTO employees (full_name, username, password, role, position, phone) VALUES ('Thu ngân 2003 Store', 'cashier', '123456', 'EMPLOYEE', 'Thu ngân', '0901000004')");
 
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (1, 'dashboard', true)");
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (1, 'products', true)");
@@ -241,6 +242,12 @@ public class DatabaseInitializer {
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (3, 'orders', true)");
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (3, 'customers', true)");
                 stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (3, 'products', true)");
+
+                stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (4, 'dashboard', true)");
+                stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (4, 'orders', true)");
+                stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (4, 'customers', true)");
+                stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (4, 'products', true)");
+                stmt.executeUpdate("INSERT INTO employee_permissions (employee_id, module_name, allowed) VALUES (4, 'payment_confirm', true)");
             }
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS order_code_sequence (date_key VARCHAR(8) PRIMARY KEY, next_sequence INT NOT NULL DEFAULT 0)");

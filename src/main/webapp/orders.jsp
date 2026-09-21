@@ -5,6 +5,27 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    com._2003store.model.User sessionUser = (com._2003store.model.User) session.getAttribute("user");
+    String userRole = sessionUser != null ? sessionUser.getRole() : "";
+    String dashboardRoute = "/dashboard/employee";
+    if ("ADMIN".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/admin";
+    } else if ("MANAGER".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/manager";
+    }
+
+    com._2003store.service.AuthService authService = new com._2003store.service.AuthService();
+    boolean canAccessOrders = sessionUser != null && authService.hasAccess(sessionUser, "orders");
+    boolean canAccessProducts = sessionUser != null && authService.hasAccess(sessionUser, "products");
+    boolean canAccessCustomers = sessionUser != null && authService.hasAccess(sessionUser, "customers");
+    boolean canAccessReports = sessionUser != null && authService.hasAccess(sessionUser, "reports");
+    boolean canAccessStaffReport = sessionUser != null && authService.hasAccess(sessionUser, "staff-report");
+    boolean canAccessEmployees = sessionUser != null && authService.hasAccess(sessionUser, "employees");
+    boolean canAccessInventory = sessionUser != null && authService.hasAccess(sessionUser, "inventory-check");
+    boolean canAccessSuppliers = sessionUser != null && authService.hasAccess(sessionUser, "suppliers");
+    boolean canConfirmPayment = sessionUser != null && authService.hasAccess(sessionUser, "payment_confirm");
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -17,31 +38,49 @@
     <aside class="sidebar">
         <h2>2003 STORE</h2>
         <nav class="sidebar-nav">
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/dashboard">Tổng quan</a>
-                    <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                    <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+            <% if ("ADMIN".equalsIgnoreCase(userRole)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/admin">Admin</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/admin">Tổng quan</a>
+                        <a href="${pageContext.request.contextPath}/employees">Quản lý nhân sự</a>
+                        <a class="active" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
+                        <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
+                        <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
+                        <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
+                        <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
+                        <a href="${pageContext.request.contextPath}/login-history">Nhật ký hệ thống</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/products">Tất cả sản phẩm</a>
-                    <a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-                    <a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
+                <% if (canAccessInventory) { %><a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a><% } %>
+                <% if (canAccessSuppliers) { %><a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a><% } %>
+            <% } else if ("MANAGER".equalsIgnoreCase(userRole)) { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/manager">Quản lý</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/manager">Tổng quan</a>
+                        <% if (canAccessOrders) { %><a class="active" href="${pageContext.request.contextPath}/orders">Bán hàng & Đơn hàng</a><% } %>
+                        <% if (canAccessProducts) { %><a href="${pageContext.request.contextPath}/products">Sản phẩm</a><% } %>
+                        <% if (canAccessCustomers) { %><a href="${pageContext.request.contextPath}/customers">Khách hàng</a><% } %>
+                        <% if (canAccessInventory) { %><a href="${pageContext.request.contextPath}/stock">Nhập kho</a><a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a><a href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a><% } %>
+                        <% if (canAccessSuppliers) { %><a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a><% } %>
+                        <% if (canAccessReports) { %><a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a><a href="${pageContext.request.contextPath}/reports">Doanh thu</a><% } %>
+                        <% if (canAccessStaffReport) { %><a href="${pageContext.request.contextPath}/staff-report">Nhân sự</a><% } %>
+                        <% if (canAccessEmployees) { %><a href="${pageContext.request.contextPath}/employees">Nhân viên</a><% } %>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-group active">
-                <a class="nav-main" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                <div class="nav-submenu">
-                    <a class="active" href="${pageContext.request.contextPath}/orders">Danh sách đơn hàng</a>
-                    <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
+            <% } else { %>
+                <div class="nav-group active manager-shell">
+                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/employee">Bán hàng</a>
+                    <div class="nav-submenu">
+                        <a href="${pageContext.request.contextPath}/dashboard/employee">Tổng quan</a>
+                        <% if (canAccessOrders) { %><a class="active" href="${pageContext.request.contextPath}/orders">Tạo đơn</a><a href="${pageContext.request.contextPath}/orders">Đơn hàng</a><% } %>
+                        <% if (canAccessProducts) { %><a href="${pageContext.request.contextPath}/products">Sản phẩm</a><% } %>
+                        <% if (canAccessCustomers) { %><a href="${pageContext.request.contextPath}/customers">Khách hàng</a><% } %>
+                        <% if (canConfirmPayment) { %><a href="${pageContext.request.contextPath}/orders">Xác nhận thanh toán</a><% } %>
+                    </div>
                 </div>
-            </div>
-            <a class="single-link" href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
+            <% } %>
             <div class="nav-divider"></div>
             <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
         </nav>
@@ -187,10 +226,10 @@
         </div>
 
         <aside class="right-rail">
-            <div class="notification-card">
+            <div class="notification-card" id="orderNotificationCard">
                 <div class="notification-header">
                     <h4>Đơn cần xử lý</h4>
-                    <button class="dismiss-btn" type="button">Xem tất cả</button>
+                    <button class="dismiss-btn" type="button" onclick="document.getElementById('orderNotificationCard').style.display='none'">Xem tất cả</button>
                 </div>
                 <%
                     List<OrderNotification> notifications = (List<OrderNotification>) request.getAttribute("notifications");
@@ -210,6 +249,12 @@
                     }
                 %>
             </div>
+            <script>
+                setTimeout(function () {
+                    const card = document.getElementById('orderNotificationCard');
+                    if (card) card.style.display = 'none';
+                }, 15000);
+            </script>
 
             <div class="order-card">
                 <div class="mini-row">
@@ -261,9 +306,13 @@
                         </div>
                         <% if ("BANK_TRANSFER".equalsIgnoreCase(selectedOrder.getPaymentMethod())) { %>
                         <div class="qr-box">
-                            <span>QR thanh toán</span>
-                            <div class="qr-placeholder">QR</div>
-                            <small><%= selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank() ? selectedOrder.getQrCode() : "Chờ thanh toán chuyển khoản" %></small>
+                            <span>QR thanh toán VietQR</span>
+                            <div class="qr-placeholder qr-clickable" data-qr-src="<%= selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank() ? selectedOrder.getQrCode() : "https://img.vietqr.io/image/MB-050117052004-compact2.png?amount=0&addInfo=Thanh+toan+don+test" %>" onclick="openQrModal(this.dataset.qrSrc)" tabindex="0" role="button" aria-label="Phóng to mã QR thanh toán">
+                                <img class="qr-image" src="<%= selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank() ? selectedOrder.getQrCode() : "https://img.vietqr.io/image/MB-050117052004-compact2.png?amount=0&addInfo=Thanh+toan+don+test" %>" alt="VietQR" />
+                            </div>
+                            <small>Ngân hàng: MB - 050117052004</small>
+                            <small>Người nhận: Hoang Manh Dung</small>
+                            <small>Ghi chú: <%= selectedOrder.getTransactionNote() != null && !selectedOrder.getTransactionNote().isBlank() ? selectedOrder.getTransactionNote() : "Thanh toan don " + (selectedOrder.getOrderCode() != null ? selectedOrder.getOrderCode() : "#" + selectedOrder.getId()) %></small>
                         </div>
                         <% } %>
                         <textarea name="transactionNote" placeholder="Ghi chú xác nhận thanh toán"><%= selectedOrder.getTransactionNote() != null ? selectedOrder.getTransactionNote() : "" %></textarea>
@@ -312,5 +361,39 @@
         </div>
     </div>
     <% } %>
+
+    <div id="qrModal" class="qr-modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="qr-modal-backdrop" onclick="closeQrModal()"></div>
+        <div class="qr-modal-content">
+            <button type="button" class="qr-modal-close" aria-label="Đóng" onclick="closeQrModal()">×</button>
+            <img id="qrModalImage" src="" alt="Mã QR thanh toán VietQR" />
+        </div>
+    </div>
+
+    <script>
+        function openQrModal(src) {
+            const modal = document.getElementById('qrModal');
+            const img = document.getElementById('qrModalImage');
+            if (!modal || !img) return;
+            img.src = src;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQrModal() {
+            const modal = document.getElementById('qrModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeQrModal();
+            }
+        });
+    </script>
 </body>
 </html>

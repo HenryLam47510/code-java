@@ -3,6 +3,8 @@ package com._2003store.servlet;
 import com._2003store.dao.StaffReportDao;
 import com._2003store.model.LoginHistory;
 import com._2003store.model.RevenuePoint;
+import com._2003store.model.User;
+import com._2003store.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,9 +18,20 @@ import java.util.List;
 @WebServlet("/staff-report")
 public class StaffReportServlet extends HttpServlet {
     private final StaffReportDao staffReportDao = new StaffReportDao();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User user = (User) request.getSession().getAttribute("user");
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (!authService.hasAccess(user, "staff-report")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xem báo cáo nhân viên.");
+            return;
+        }
+
         String from = request.getParameter("from");
         String to = request.getParameter("to");
 

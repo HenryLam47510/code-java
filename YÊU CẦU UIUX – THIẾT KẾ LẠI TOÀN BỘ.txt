@@ -1,474 +1,141 @@
-Được. Phần này mình sẽ viết tiếp thành **một block prompt bổ sung**, để bạn nối ngay sau prompt trước. Mình giữ đúng ý của bạn nhưng chuyển thành yêu cầu kỹ thuật rõ hơn để Copilot không hiểu sai.
+3 hệ thống/trang hoàn toàn tách biệt.
 
----
+Nên làm kiểu:
 
-## 25. BỔ SUNG CHỨC NĂNG BÁO CÁO DOANH THU
+                    LOGIN
+                      │
+          ┌───────────┼───────────┐
+          ↓           ↓           ↓
+       ADMIN       MANAGER     EMPLOYEE
+          │           │           │
+          ↓           ↓           ↓
+    Admin Dashboard  Manager     Employee
+                     Dashboard    Dashboard
+1. Admin
 
-Cải thiện trang **Báo cáo doanh thu** hiện tại.
+Admin dashboard tập trung vào quản trị hệ thống:
 
-### Bộ lọc thời gian
+┌──────────────────────────────┐
+│ ADMIN                        │
+├──────────────────────────────┤
+│ Dashboard                    │
+│ Quản lý tài khoản            │
+│ Quản lý quyền                │
+│ Quản lý nhân viên            │
+│ Cấu hình hệ thống            │
+│ Nhật ký hệ thống              │
+└──────────────────────────────┘
 
-Cho phép người dùng lựa chọn:
+Admin không nhất thiết phải xử lý bán hàng hằng ngày.
 
-* **Theo ngày**
-* **Theo tháng**
-* **Theo năm**
+2. Manager
 
-Khi thay đổi chế độ xem, biểu đồ và bảng dữ liệu phải tự động thay đổi theo khoảng thời gian tương ứng.
+Đây là giao diện quản lý cửa hàng:
 
-Ví dụ:
+┌──────────────────────────────┐
+│ QUẢN LÝ                      │
+├──────────────────────────────┤
+│ Tổng quan                    │
+│ Quản lý bán hàng             │
+│ Đơn hàng                     │
+│ Hóa đơn                      │
+│ Sản phẩm                     │
+│ Kho hàng                     │
+│ Khách hàng                   │
+│ Nhân viên                    │
+│ Doanh thu                    │
+│ Báo cáo                      │
+│ Thông báo                    │
+└──────────────────────────────┘
 
-**Xem theo ngày:**
+Manager nhìn được gần như toàn bộ hoạt động cửa hàng.
 
-```text
-10/06 → 11.000.000đ
-11/06 → 20.000.000đ
-12/06 → 50.000.000đ
-13/06 → 15.000.000đ
-```
+3. Employee
 
-**Xem theo tháng:**
+Nhân viên chỉ cần giao diện phục vụ bán hàng:
 
-```text
-Tháng 1 → xxx.xxx.xxxđ
-Tháng 2 → xxx.xxx.xxxđ
-Tháng 3 → xxx.xxx.xxxđ
-```
+┌──────────────────────────────┐
+│ NHÂN VIÊN                    │
+├──────────────────────────────┤
+│ Bán hàng                     │
+│ Tạo đơn                      │
+│ Đơn hàng cần xử lý           │
+│ Hóa đơn                      │
+│ Sản phẩm                     │
+│ Khách hàng                   │
+│ Thông báo                    │
+└──────────────────────────────┘
 
-**Xem theo năm:**
+Không cần cho nhân viên thấy:
 
-```text
-2024 → xxx.xxx.xxxđ
-2025 → xxx.xxx.xxxđ
-2026 → xxx.xxx.xxxđ
-```
+❌ Quản lý nhân viên
+❌ Doanh thu toàn cửa hàng
+❌ Xuất báo cáo
+❌ Phân quyền
+❌ Cấu hình hệ thống
+❌ Các chức năng quản trị
+Nhưng có một điểm rất quan trọng
 
-### Dữ liệu thực
+Đừng chỉ ẩn menu.
+Ví dụ Employee không nhìn thấy:
 
-Không sử dụng dữ liệu mẫu/hard-code cho báo cáo.
+[Quản lý nhân viên]
 
-Cần:
+nhưng nếu nó biết URL:
 
-* Kiểm tra database hiện tại.
-* Bổ sung dữ liệu mẫu thực tế vào database nếu database chưa đủ dữ liệu để kiểm tra báo cáo.
-* Lấy doanh thu trực tiếp từ database.
-* Chỉ tính các đơn đã thanh toán thành công.
-* Phân biệt doanh thu tiền mặt và chuyển khoản nếu dữ liệu hiện tại hỗ trợ.
+/admin/employees
 
-Không tạo dữ liệu giả trực tiếp trong Java/JSP để làm biểu đồ.
+mà vẫn truy cập được thì phân quyền coi như chưa làm.
 
----
+Phải có cả:
 
-## 26. HIỂN THỊ GIÁ TRỊ TRÊN BIỂU ĐỒ
+UI
+ ↓
+Ẩn chức năng không có quyền
+ ↓
+Backend
+ ↓
+Kiểm tra ROLE/PERMISSION
+ ↓
+Cho phép / từ chối
 
-Trên **mỗi cột của biểu đồ doanh thu phải hiển thị số tiền thực tế**.
+Ví dụ Servlet:
 
-Ví dụ:
+if (!"MANAGER".equals(user.getRole())
+        && !"ADMIN".equals(user.getRole())) {
 
-```text
-             50.000.000đ
-                  │
-                  █
-                  █
-      20.000.000  █
-           █      █
-           █      █
-11.000.000 █      █
-    █      █      █
-───┴────┴────┴───
-  10/06   11/06  12/06
-```
-
-Không yêu cầu người dùng phải hover mới biết giá trị.
-
-Giá trị doanh thu phải được hiển thị trực tiếp trên đầu cột nếu giao diện cho phép.
-
----
-
-## 27. TỶ LỆ CHIỀU CAO CỘT BIỂU ĐỒ
-
-Biểu đồ phải tự động điều chỉnh theo **giá trị doanh thu lớn nhất trong khoảng dữ liệu đang xem**.
-
-Ví dụ:
-
-```text
-10/06 = 11 triệu
-11/06 = 20 triệu
-12/06 = 50 triệu
-```
-
-Thì:
-
-* Cột `12/06` = 50 triệu → cao nhất.
-* Cột `11/06` = 20 triệu → cao khoảng 40% so với cột cao nhất.
-* Cột `10/06` = 11 triệu → cao khoảng 22% so với cột cao nhất.
-
-Không làm cho tất cả các cột có chiều cao gần bằng nhau.
-
-Biểu đồ phải tự động scale khi dữ liệu thay đổi.
-
-Ví dụ nếu dữ liệu mới là:
-
-```text
-10/06 = 100 triệu
-11/06 = 20 triệu
-12/06 = 50 triệu
-```
-
-thì cột `10/06` phải trở thành cột cao nhất.
-
----
-
-# 28. THÔNG BÁO THANH TOÁN
-
-Bổ sung hệ thống thông báo liên quan đến xử lý đơn hàng.
-
-Khi có đơn hàng cần nhân viên xử lý:
-
-```text
-🔔 Đơn hàng mới cần xử lý
-Đơn hàng #DH001 đang chờ thanh toán.
-```
-
-Khi hệ thống nhận/xác nhận được thanh toán chuyển khoản:
-
-```text
-🔔 Đã nhận thanh toán
-Đơn hàng #DH001 đã nhận được thanh toán chuyển khoản.
-```
-
-Thông báo phải chứa ít nhất:
-
-* Mã đơn hàng.
-* Loại thông báo.
-* Thời gian.
-* Trạng thái.
-
-Thông báo phải được liên kết với đơn hàng để nhân viên có thể nhấn vào và xem chi tiết đơn.
-
-Nếu hệ thống hiện tại đã có cơ chế notification thì **tận dụng code hiện tại**, không tạo một hệ thống notification khác nếu không cần thiết.
-
----
-
-# 29. CẢI THIỆN "ĐƠN HÀNG CẦN XỬ LÝ"
-
-Khi nhân viên chọn một đơn hàng cần xử lý, **không chuyển sang một trang hoàn toàn mới nếu không cần thiết**.
-
-Hiển thị một **tab/modal/panel chi tiết nằm bên trên trang hiện tại**.
-
-Mục đích là nhân viên vẫn cảm nhận mình đang ở trang "Đơn hàng cần xử lý", nhưng có một cửa sổ chi tiết của đơn hàng đang được chọn.
-
-### Bố cục
-
-Chia khu vực thành 2 phần:
-
-```text
-┌──────────────────────────────────────────────────────┐
-│  XỬ LÝ ĐƠN HÀNG #DH001                         [X] │
-├───────────────────────┬──────────────────────────────┤
-│                       │                              │
-│  PHƯƠNG THỨC          │  THÔNG TIN ĐƠN HÀNG         │
-│  THANH TOÁN           │                              │
-│                       │  [Ảnh sản phẩm]             │
-│  ○ Tiền mặt            │  Tên sản phẩm              │
-│                       │  Màu sắc                    │
-│  ○ Chuyển khoản        │  Giá tiền                   │
-│                       │  Số lượng                    │
-│                       │  Thời gian mua               │
-│                       │  Khách hàng                  │
-│                       │                              │
-├───────────────────────┴──────────────────────────────┤
-│        [HỦY ĐƠN]       [XÁC NHẬN]       [QUAY LẠI] │
-└──────────────────────────────────────────────────────┘
-```
-
-### Phần bên trái
-
-Hiển thị:
-
-**Mã đơn hàng**
+    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+    return;
+}
+Các chức năng dùng chung thì dùng chung UI, còn dashboard/sidebar khác nhau theo role.
 
 Ví dụ:
 
-```text
-DH001
-```
-
-Sau đó hiển thị lựa chọn:
-
-```text
-PHƯƠNG THỨC THANH TOÁN
-
-○ Tiền mặt
-
-○ Chuyển khoản
-```
-
-Nếu chọn **Tiền mặt**:
-
-* Hiển thị xác nhận nhân viên đã nhận đủ tiền.
-* Sau khi xác nhận → hoàn tất thanh toán.
-
-Nếu chọn **Chuyển khoản**:
-
-* Hiển thị QR thanh toán nếu chưa thanh toán.
-* Hiển thị trạng thái chờ thanh toán.
-* Khi hệ thống nhận được thanh toán → cập nhật trạng thái.
-
----
-
-# 30. THÔNG TIN ĐƠN HÀNG BÊN PHẢI
-
-Phần bên phải hiển thị đầy đủ thông tin của đơn:
-
-* Mã đơn hàng.
-* Tên khách hàng.
-* Thời gian mua.
-* Tên sản phẩm.
-* Hình ảnh sản phẩm.
-* Màu sắc.
-* Size nếu có.
-* Số lượng.
-* Đơn giá.
-* Thành tiền.
-* Tổng tiền đơn hàng.
-
-Thông tin phải lấy từ database.
-
-Không sử dụng dữ liệu hard-code.
-
-Nếu đơn có nhiều sản phẩm, hiển thị danh sách tất cả sản phẩm trong đơn.
-
----
-
-# 31. BA NÚT XỬ LÝ
-
-Ở cuối panel/tab chi tiết đơn hàng có 3 nút:
-
-### HỦY ĐƠN
-
-* Hiển thị confirmation trước khi thực hiện.
-* Nếu hủy đơn thì yêu cầu lý do nếu business logic hiện tại yêu cầu.
-* Không xóa vật lý dữ liệu đơn hàng.
-
-### XÁC NHẬN
-
-Nút này dùng để xác nhận thao tác hiện tại.
-
-Ví dụ:
-
-```text
-Chọn tiền mặt
-→ Xác nhận đã nhận tiền
-→ Xác nhận đơn
-→ Đơn chuyển sang đã thanh toán/hoàn thành
-```
-
-Hoặc:
-
-```text
-Chọn chuyển khoản
-→ Hiển thị QR
-→ Nhận thanh toán
-→ Xác nhận đơn
-→ Đơn chuyển sang đã thanh toán/hoàn thành
-```
-
-Không cho xác nhận thanh toán nếu điều kiện thanh toán chưa đáp ứng.
-
-### QUAY LẠI
-
-* Đóng panel/tab chi tiết.
-* Quay lại danh sách đơn hàng.
-* Không thay đổi dữ liệu.
-
----
-
-# 32. CHI TIẾT ĐƠN HÀNG TRONG DANH SÁCH ĐƠN
-
-Trong trang **Danh sách đơn hàng**, khi người dùng nhấn:
-
-```text
-[CHI TIẾT]
-```
-
-thì mở panel/modal chi tiết ngay trên trang hiện tại.
-
-Không bắt buộc chuyển sang URL/trang mới.
-
-Ví dụ:
-
-```text
-Danh sách đơn hàng
-        ↓
-Nhấn "Chi tiết"
-        ↓
-┌─────────────────────────────────┐
-│       CHI TIẾT ĐƠN HÀNG         │
-│                                 │
-│  Thanh toán │ Thông tin đơn    │
-│                                 │
-│      [Hủy] [Xác nhận] [Quay lại]│
-└─────────────────────────────────┘
-```
-
-Panel phải có nút đóng `X` ở góc trên.
-
----
-
-# 33. DỌN LẠI MENU CHÍNH
-
-Kiểm tra lại Sidebar/Menu chính.
-
-### Xóa khỏi menu chính:
-
-**Nhập kho**
-
-**Xuất kho**
-
-Lý do: hai chức năng này đã nằm trong nhóm chức năng **Sản phẩm/Kho**, không cần xuất hiện thành menu cấp cao riêng.
-
-### Xóa khỏi menu chính:
-
-**Khách hàng**
-
-Lý do: chức năng quản lý khách hàng đã nằm trong nhóm chức năng **Đơn hàng**.
-
-Không xóa code hoặc database của các chức năng này.
-
-Chỉ thay đổi **cách tổ chức menu/navigation**.
-
-Ví dụ:
-
-```text
-SẢN PHẨM
- ├── Danh sách sản phẩm
- ├── Nhập kho
- └── Xuất kho
-
-ĐƠN HÀNG
- ├── Danh sách đơn hàng
- ├── Đơn hàng cần xử lý
- └── Khách hàng
-```
-
-Thay vì:
-
-```text
-Sản phẩm
-Nhập kho
-Xuất kho
-Đơn hàng
-Khách hàng
-```
-
----
-
-# 34. YÊU CẦU UI CHO PANEL XỬ LÝ ĐƠN
-
-Panel xử lý đơn phải phù hợp với phong cách UI/UX đã yêu cầu ở phần trước.
-
-Ưu tiên:
-
-* Rõ ràng.
-* Ít thao tác.
-* Dễ nhìn.
-* Thông tin quan trọng nổi bật.
-* Tổng tiền dễ nhận biết.
-* Trạng thái thanh toán rõ ràng.
-* Nút `Xác nhận` nổi bật.
-* Nút `Hủy` phải có confirmation.
-* Không làm panel quá rộng hoặc quá nhỏ.
-* Có thể cuộn phần thông tin sản phẩm nếu đơn có nhiều sản phẩm.
-
-Đây là phần nhân viên sử dụng thường xuyên nên **tối ưu tốc độ thao tác hơn là trang trí**.
-
----
-
-# 35. KIỂM TRA SAU KHI SỬA
-
-Sau khi hoàn thành, hãy kiểm tra ít nhất các trường hợp:
-
-### Báo cáo
-
-* Xem theo ngày.
-* Xem theo tháng.
-* Xem theo năm.
-* Dữ liệu lấy từ database.
-* Giá trị hiển thị trên từng cột.
-* Cột cao nhất tương ứng với doanh thu lớn nhất.
-* Thay đổi dữ liệu → biểu đồ tự scale.
-
-### Đơn hàng
-
-* Tạo đơn.
-* Đơn xuất hiện trong danh sách xử lý.
-* Mở chi tiết bằng panel/modal.
-* Xem đầy đủ thông tin sản phẩm.
-* Chọn tiền mặt.
-* Chọn chuyển khoản.
-* Xác nhận thanh toán.
-* Hủy đơn.
-* Quay lại danh sách.
-
-### Thông báo
-
-* Có thông báo khi có đơn cần xử lý.
-* Có thông báo khi nhận thanh toán chuyển khoản.
-* Thông báo chứa đúng mã đơn.
-
-### Menu
-
-* Nhập kho không còn ở menu chính.
-* Xuất kho không còn ở menu chính.
-* Khách hàng không còn ở menu chính.
-* Các chức năng bên trong vẫn truy cập được từ menu cha tương ứng.
-
-**Quan trọng:** không được xóa chức năng backend chỉ vì xóa mục menu. Chỉ thay đổi navigation và giao diện.
-36. MÃ ĐƠN HÀNG TỰ ĐỘNG SINH, KHÔNG CHO NHÂN VIÊN NHẬP HOẶC CHỈNH SỬA
-Hệ thống phải tự động sinh mã đơn hàng cho mỗi đơn mới.
-
-Quy tắc bắt buộc
-Nhân viên không được nhập tay mã đơn hàng.
-Nhân viên không được chỉnh sửa mã đơn hàng sau khi đơn được tạo.
-Tất cả đơn hàng phải có mã được tạo bởi backend trước khi lưu vào database.
-Mã đơn hàng phải có format chuẩn:
-DHYYYYMMDD-XXXX
-Trong đó:
-YYYYMMDD là ngày tạo đơn
-XXXX là số thứ tự tăng dần theo ngày
-Ví dụ:
-DH20260921-0001
-DH20260921-0002
-DH20260922-0001
-Unique và chống trùng khi đồng thời nhiều request
-Mã đơn hàng phải là duy nhất trong database.
-Cần có UNIQUE constraint trên cột mã đơn hàng.
-Hệ thống phải chống trùng khi nhiều request tạo đơn đồng thời.
-Không được để xảy ra trường hợp hai đơn cùng lúc nhận cùng mã.
-Cần áp dụng cơ chế đảm bảo an toàn như:
-transaction,
-lock tại database,
-sequence table,
-hoặc cách sinh mã an toàn khác phù hợp với hệ thống hiện tại.
-Mã đơn phải được sinh trước khi lưu đơn chính thức, không sinh sau khi lưu.
-Dùng thống nhất trong toàn bộ hệ thống
-Mã đơn hàng được tạo và sử dụng thống nhất trong toàn bộ quy trình:
-
-danh sách đơn hàng
-chi tiết đơn hàng
-xử lý thanh toán
-hóa đơn
-QR chuyển khoản
-thông báo
-báo cáo doanh thu
-các màn hình liên quan khác
-Không được tạo mã khác nhau cho cùng một đơn hàng ở các màn hình khác nhau.
-
-Yêu cầu kỹ thuật
-Thêm UNIQUE constraint cho cột mã đơn hàng trong database.
-Không cho phép backend nhận mã đơn từ request người dùng.
-Nếu có form tạo đơn hiện tại đang cho phép nhập mã, phải bỏ chức năng đó.
-Tất cả API/Servlet/Service liên quan đến tạo đơn phải gọi logic sinh mã tự động.
-Không lưu trữ mã đơn hàng dưới dạng giá trị do người dùng nhập tay.
-Nếu dữ liệu cũ đang có mã không đúng format, cần chuẩn hóa hoặc migrate dữ liệu trước khi áp dụng yêu cầu mới.
+Employee
+    └── /products
+          └── xem sản phẩm
+
+Manager
+    └── /products
+          └── quản lý sản phẩm
+
+Cùng một module nhưng quyền thao tác khác nhau.
+Với 2003 Store hiện tại, mình sẽ chọn mô hình này
+                    LOGIN
+                      │
+             ┌────────┴────────┐
+             │                 │
+         Kiểm tra ROLE      Session
+             │
+     ┌───────┼────────┐
+     ↓       ↓        ↓
+   ADMIN   MANAGER  EMPLOYEE
+     │       │        │
+     ↓       ↓        ↓
+  Admin    Manager  Employee
+Dashboard  Dashboard Dashboard
+
+3 dashboard riêng + các module dùng chung + backend kiểm tra quyền.
+Và với tình huống cửa hàng của bạn, thu ngân không nhất thiết phải thành role thứ 4. 
+Có thể để là EMPLOYEE nhưng tài khoản thu ngân được cấp thêm quyền PAYMENT_CONFIRM. 
+Như vậy sau này 1 nhân viên bán hàng và 1 thu ngân có cùng role nhưng quyền thao tác khác nhau.

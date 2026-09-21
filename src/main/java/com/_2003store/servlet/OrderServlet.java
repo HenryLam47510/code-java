@@ -85,6 +85,12 @@ public class OrderServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
+        if ("confirm-payment".equals(action)) {
+            if (!authService.hasAccess(user, "payment_confirm")) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền xác nhận thanh toán.");
+                return;
+            }
+        }
         if ("confirm-payment".equals(action) || "cancel-order".equals(action)) {
             String orderIdParam = request.getParameter("orderId");
             if (orderIdParam == null || orderIdParam.isBlank()) {
