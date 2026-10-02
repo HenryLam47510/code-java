@@ -2,6 +2,8 @@ package com._2003store.servlet;
 
 import com._2003store.dao.OrderDao;
 import com._2003store.dao.ReportDao;
+import com._2003store.model.CategoryStat;
+import com._2003store.model.ProductSalesStat;
 import com._2003store.model.User;
 import com._2003store.service.AuthService;
 import com._2003store.service.StatsService;
@@ -12,6 +14,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @WebServlet({"/dashboard", "/dashboard/admin", "/dashboard/manager", "/dashboard/employee"})
 public class DashboardServlet extends HttpServlet {
@@ -61,6 +67,55 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("revenueSeries", reportDao.getRevenueSeries("day"));
         request.setAttribute("recentOrders", statsService.getRecentOrders());
         request.setAttribute("notifications", new OrderDao().getOrderNotifications());
+
+        LocalDate today = LocalDate.now();
+        String period = request.getParameter("period");
+        String fromValue = request.getParameter("from");
+        String toValue = request.getParameter("to");
+        LocalDate fromDate;
+        LocalDate toDate;
+        try {
+            if ("today".equals(period)) {
+                fromDate = today;
+                toDate = today;
+            } else if ("month".equals(period)) {
+                fromDate = YearMonth.from(today).atDay(1);
+                toDate = today;
+            } else if ("year".equals(period)) {
+                fromDate = today.withDayOfYear(1);
+                toDate = today;
+            } else if ("custom".equals(period)) {
+                fromDate = LocalDate.parse(fromValue);
+                toDate = LocalDate.parse(toValue);
+                if (fromDate.isAfter(toDate)) {
+                    throw new IllegalArgumentException("Invalid date range");
+                }
+            } else {
+                period = "week";
+                fromDate = today.minusDays(6);
+                toDate = today;
+            }
+        } catch (RuntimeException e) {
+            period = "week";
+            fromDate = today.minusDays(6);
+            toDate = today;
+        }
+
+        Timestamp rangeStart = Timestamp.valueOf(fromDate.atStartOfDay());
+        Timestamp rangeEnd = Timestamp.valueOf(toDate.plusDays(1).atStartOfDay());
+        List<ProductSalesStat> topProducts = reportDao.getTopSellingProducts(rangeStart, rangeEnd);
+        List<ProductSalesStat> slowProducts = reportDao.getSlowSellingProducts(rangeStart, rangeEnd);
+        List<CategoryStat> categories = reportDao.getProductCategoryDistribution();
+        request.setAttribute("salesPeriod", period);
+        request.setAttribute("salesFrom", fromDate);
+        request.setAttribute("salesTo", toDate);
+        request.setAttribute("topProducts", topProducts);
+        request.setAttribute("slowProducts", slowProducts);
+        request.setAttribute("totalUnitsSold", reportDao.getTotalUnitsSold(rangeStart, rangeEnd));
+        request.setAttribute("categories", categories);
+        request.setAttribute("totalCategories", categories.size());
+        request.setAttribute("topCategory", categories.isEmpty() ? null : categories.get(0));
+        request.setAttribute("bestSeller", topProducts.isEmpty() ? null : topProducts.get(0));
         request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
     }
 }

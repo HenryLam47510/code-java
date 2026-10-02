@@ -2,6 +2,27 @@
 <%@ page import="com._2003store.model.Product" %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+    com._2003store.model.User sessionUser = (com._2003store.model.User) session.getAttribute("user");
+    String userRole = sessionUser != null ? sessionUser.getRole() : "";
+    String dashboardRoute = "/dashboard/employee";
+    if ("ADMIN".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/admin";
+    } else if ("MANAGER".equalsIgnoreCase(userRole)) {
+        dashboardRoute = "/dashboard/manager";
+    }
+
+    com._2003store.service.AuthService authService = new com._2003store.service.AuthService();
+    boolean canAccessOrders = sessionUser != null && authService.hasAccess(sessionUser, "orders");
+    boolean canAccessProducts = sessionUser != null && authService.hasAccess(sessionUser, "products");
+    boolean canAccessCustomers = sessionUser != null && authService.hasAccess(sessionUser, "customers");
+    boolean canAccessReports = sessionUser != null && authService.hasAccess(sessionUser, "reports");
+    boolean canAccessStaffReport = sessionUser != null && authService.hasAccess(sessionUser, "staff-report");
+    boolean canAccessEmployees = sessionUser != null && authService.hasAccess(sessionUser, "employees");
+    boolean canAccessInventory = sessionUser != null && authService.hasAccess(sessionUser, "inventory-check");
+    boolean canAccessSuppliers = sessionUser != null && authService.hasAccess(sessionUser, "suppliers");
+    boolean canAccessLoginHistory = sessionUser != null && authService.hasAccess(sessionUser, "login-history");
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -11,44 +32,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=2003store-20260921">
 </head>
 <body class="dashboard-page">
-    <aside class="sidebar">
-        <h2>2003 STORE</h2>
-        <nav class="sidebar-nav">
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/dashboard">Tổng quan</a>
-                    <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                    <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
-                </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/products">Tất cả sản phẩm</a>
-                    <a href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-                    <a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-                </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/orders">Danh sách</a>
-                    <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
-                    <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-                </div>
-            </div>
-            <a class="single-link" href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
-            <a class="single-link active" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/employees">Nhân viên</a>
-            <div class="nav-divider"></div>
-            <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
-        </nav>
-    </aside>
+    <%@ include file="/WEB-INF/sidebar.jsp" %>
 
     <main class="main-panel">
         <div class="topbar">

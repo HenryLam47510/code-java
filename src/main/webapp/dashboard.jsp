@@ -8,6 +8,9 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.math.BigDecimal" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
     User currentUser = (User) session.getAttribute("user");
@@ -39,100 +42,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - 2003 Store</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=2003store-20260921">
 </head>
 <body class="dashboard-page">
-    <aside class="sidebar">
-        <h2>2003 STORE</h2>
-        <nav class="sidebar-nav">
-            <% if ("admin".equals(dashboardKey)) { %>
-                <div class="nav-group active manager-shell">
-                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/admin">Admin</a>
-                    <div class="nav-submenu">
-                        <a class="active" href="${pageContext.request.contextPath}/dashboard/admin">Tổng quan</a>
-                        <a href="${pageContext.request.contextPath}/employees">Quản lý nhân sự</a>
-                        <a href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                        <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                        <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-                        <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
-                        <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
-                        <a href="${pageContext.request.contextPath}/login-history">Nhật ký hệ thống</a>
-                    </div>
-                </div>
-                <% if (canAccessInventory) { %>
-                    <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
-                <% } %>
-                <% if (canAccessSuppliers) { %>
-                    <a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
-                <% } %>
-                <% if (canAccessReports) { %>
-                    <a class="single-link" href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                <% } %>
-            <% } else if ("manager".equals(dashboardKey)) { %>
-                <div class="nav-group active manager-shell">
-                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/manager">Quản lý</a>
-                    <div class="nav-submenu">
-                        <a class="active" href="${pageContext.request.contextPath}/dashboard/manager">Tổng quan</a>
-                        <% if (canAccessOrders) { %>
-                            <a href="${pageContext.request.contextPath}/orders">Bán hàng & Đơn hàng</a>
-                        <% } %>
-                        <% if (canAccessOrders) { %>
-                            <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
-                        <% } %>
-                        <% if (canAccessProducts) { %>
-                            <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                        <% } %>
-                        <% if (canAccessCustomers) { %>
-                            <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-                        <% } %>
-                        <% if (canAccessInventory) { %>
-                            <a href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-                            <a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-                            <a href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
-                        <% } %>
-                        <% if (canAccessSuppliers) { %>
-                            <a href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
-                        <% } %>
-                        <% if (canAccessReports) { %>
-                            <a href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-                            <a href="${pageContext.request.contextPath}/reports">Doanh thu</a>
-                        <% } %>
-                        <% if (canAccessStaffReport) { %>
-                            <a href="${pageContext.request.contextPath}/staff-report">Nhân sự</a>
-                        <% } %>
-                        <% if (canAccessEmployees) { %>
-                            <a href="${pageContext.request.contextPath}/employees">Nhân viên</a>
-                        <% } %>
-                    </div>
-                </div>
-            <% } else { %>
-                <div class="nav-group active manager-shell">
-                    <a class="nav-main" href="${pageContext.request.contextPath}/dashboard/employee">Bán hàng</a>
-                    <div class="nav-submenu">
-                        <a class="active" href="${pageContext.request.contextPath}/dashboard/employee">Tổng quan</a>
-                        <% if (canAccessOrders) { %>
-                            <a href="${pageContext.request.contextPath}/orders">Tạo đơn</a>
-                            <a href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                        <% } %>
-                        <% if (canAccessProducts) { %>
-                            <a href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                        <% } %>
-                        <% if (canAccessCustomers) { %>
-                            <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-                        <% } %>
-                        <% if (canConfirmPayment) { %>
-                            <a href="${pageContext.request.contextPath}/orders">Xác nhận thanh toán</a>
-                        <% } %>
-                    </div>
-                </div>
-                <% if (canAccessProducts) { %>
-                    <a class="single-link" href="${pageContext.request.contextPath}/products">Xem sản phẩm</a>
-                <% } %>
-            <% } %>
-            <div class="nav-divider"></div>
-            <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
-        </nav>
-    </aside>
+    <%@ include file="/WEB-INF/sidebar.jsp" %>
 
     <main class="main-panel dashboard-shell">
         <div class="workspace-col">
@@ -197,6 +111,125 @@
                     <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("thisMonthRevenue")) %>₫</p>
                     <span class="trend">▲ 9.3%</span>
                 </article>
+            </section>
+
+            <section class="analytics-section" aria-labelledby="analyticsTitle">
+                <div class="analytics-heading">
+                    <div>
+                        <span class="panel-kicker">Thống kê / Phân tích dữ liệu</span>
+                        <h2 id="analyticsTitle">Hiệu quả sản phẩm</h2>
+                    </div>
+                    <form class="analytics-filter" method="get" action="${pageContext.request.contextPath}/dashboard">
+                        <label for="salesPeriod">Khoảng thời gian</label>
+                        <select id="salesPeriod" name="period">
+                            <option value="today" ${salesPeriod == 'today' ? 'selected' : ''}>Hôm nay</option>
+                            <option value="week" ${salesPeriod == 'week' ? 'selected' : ''}>7 ngày qua</option>
+                            <option value="month" ${salesPeriod == 'month' ? 'selected' : ''}>Tháng này</option>
+                            <option value="year" ${salesPeriod == 'year' ? 'selected' : ''}>Năm nay</option>
+                            <option value="custom" ${salesPeriod == 'custom' ? 'selected' : ''}>Tùy chọn</option>
+                        </select>
+                        <div class="analytics-date-range" id="salesDateRange" ${salesPeriod != 'custom' ? 'hidden' : ''}>
+                            <label class="visually-hidden" for="salesFrom">Từ ngày</label>
+                            <input id="salesFrom" type="date" name="from" value="${salesFrom}">
+                            <span aria-hidden="true">đến</span>
+                            <label class="visually-hidden" for="salesTo">Đến ngày</label>
+                            <input id="salesTo" type="date" name="to" value="${salesTo}">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Cập nhật</button>
+                    </form>
+                </div>
+
+                <div class="analytics-stats">
+                    <article class="analytics-stat">
+                        <span>Tổng sản phẩm</span>
+                        <strong>${totalProducts}</strong>
+                    </article>
+                    <article class="analytics-stat">
+                        <span>Tổng thể loại</span>
+                        <strong>${totalCategories}</strong>
+                    </article>
+                    <article class="analytics-stat">
+                        <span>Đã bán trong kỳ</span>
+                        <strong>${totalUnitsSold}</strong>
+                    </article>
+                    <article class="analytics-stat">
+                        <span>Bán chạy nhất trong kỳ</span>
+                        <c:choose>
+                            <c:when test="${not empty bestSeller}">
+                                <strong class="analytics-stat-name" title="${fn:escapeXml(bestSeller.productName)}"><c:out value="${bestSeller.productName}"/></strong>
+                                <small>${bestSeller.quantitySold} đôi</small>
+                            </c:when>
+                            <c:otherwise><strong class="analytics-stat-name">Chưa có dữ liệu</strong></c:otherwise>
+                        </c:choose>
+                    </article>
+                    <article class="analytics-stat">
+                        <span>Thể loại nhiều sản phẩm nhất</span>
+                        <c:choose>
+                            <c:when test="${not empty topCategory}">
+                                <strong class="analytics-stat-name"><c:out value="${topCategory.categoryName}"/></strong>
+                                <small>${topCategory.productCount} sản phẩm</small>
+                            </c:when>
+                            <c:otherwise><strong class="analytics-stat-name">Chưa có dữ liệu</strong></c:otherwise>
+                        </c:choose>
+                    </article>
+                </div>
+
+                <div class="analytics-grid">
+                    <article class="analytics-panel">
+                        <div class="section-head">
+                            <h3>Top 5 sản phẩm bán chạy</h3>
+                            <span class="muted">${salesFrom} - ${salesTo}</span>
+                        </div>
+                        <div class="analytics-chart">
+                            <c:choose>
+                                <c:when test="${not empty topProducts}"><canvas id="topProductsChart" aria-label="Biểu đồ top sản phẩm bán chạy" role="img"></canvas></c:when>
+                                <c:otherwise><p class="empty-chart">Chưa có đơn đã thanh toán trong khoảng thời gian này.</p></c:otherwise>
+                            </c:choose>
+                        </div>
+                        <div class="chart-data" id="topProductsData">
+                            <c:forEach items="${topProducts}" var="item"><span data-label="${fn:escapeXml(item.productName)}" data-value="${item.quantitySold}" data-revenue="${item.revenue}"></span></c:forEach>
+                        </div>
+                    </article>
+
+                    <article class="analytics-panel">
+                        <div class="section-head">
+                            <h3>Top 5 sản phẩm bán chậm</h3>
+                            <span class="muted">${salesFrom} - ${salesTo}</span>
+                        </div>
+                        <div class="analytics-chart">
+                            <c:choose>
+                                <c:when test="${not empty slowProducts}"><canvas id="slowProductsChart" aria-label="Biểu đồ top sản phẩm bán chậm" role="img"></canvas></c:when>
+                                <c:otherwise><p class="empty-chart">Chưa có sản phẩm để thống kê.</p></c:otherwise>
+                            </c:choose>
+                        </div>
+                        <div class="chart-data" id="slowProductsData">
+                            <c:forEach items="${slowProducts}" var="item"><span data-label="${fn:escapeXml(item.productName)}" data-value="${item.quantitySold}"></span></c:forEach>
+                        </div>
+                    </article>
+
+                    <article class="analytics-panel category-analytics-panel">
+                        <div class="section-head">
+                            <h3>Cơ cấu sản phẩm theo thể loại</h3>
+                            <span class="muted">Sản phẩm đang hoạt động</span>
+                        </div>
+                        <c:choose>
+                            <c:when test="${not empty categories}">
+                                <div class="category-chart-layout">
+                                    <div class="category-chart"><canvas id="categoryChart" aria-label="Biểu đồ tỷ trọng sản phẩm theo thể loại" role="img"></canvas></div>
+                                    <ul class="category-legend">
+                                        <c:forEach items="${categories}" var="category">
+                                            <li><span class="category-name"><c:out value="${category.categoryName}"/></span><strong>${category.productCount}</strong><small><fmt:formatNumber value="${category.percentage}" maxFractionDigits="1"/>%</small></li>
+                                        </c:forEach>
+                                    </ul>
+                                </div>
+                            </c:when>
+                            <c:otherwise><p class="empty-chart">Chưa có sản phẩm để thống kê thể loại.</p></c:otherwise>
+                        </c:choose>
+                        <div class="chart-data" id="categoryData">
+                            <c:forEach items="${categories}" var="category"><span data-label="${fn:escapeXml(category.categoryName)}" data-value="${category.productCount}"></span></c:forEach>
+                        </div>
+                    </article>
+                </div>
             </section>
 
             <section class="panel chart-panel">
@@ -342,5 +375,86 @@
             </div>
         </aside>
     </main>
+    <script>
+        const salesPeriod = document.getElementById('salesPeriod');
+        const salesDateRange = document.getElementById('salesDateRange');
+        const salesDates = salesDateRange.querySelectorAll('input[type="date"]');
+        function updateSalesDateRange() {
+            const isCustom = salesPeriod.value === 'custom';
+            salesDateRange.hidden = !isCustom;
+            salesDates.forEach(function (input) {
+                input.required = isCustom;
+                input.disabled = !isCustom;
+            });
+        }
+        salesPeriod.addEventListener('change', updateSalesDateRange);
+        updateSalesDateRange();
+
+        const chartColors = ['#2563eb', '#f97316', '#16a34a', '#dc2626', '#0d9488', '#ca8a04', '#64748b'];
+        function readChartData(elementId) {
+            return Array.from(document.querySelectorAll('#' + elementId + ' span')).map(function (item) {
+                return {
+                    label: item.dataset.label,
+                    value: Number(item.dataset.value),
+                    revenue: Number(item.dataset.revenue || 0)
+                };
+            });
+        }
+        function renderRankingChart(canvasId, dataId, showRevenue) {
+            const canvas = document.getElementById(canvasId);
+            const data = readChartData(dataId);
+            if (!canvas || data.length === 0) return;
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: data.map(function (item) { return item.label; }),
+                    datasets: [{
+                        label: 'Số đôi đã bán',
+                        data: data.map(function (item) { return item.value; }),
+                        backgroundColor: ['#2563eb', '#0d9488', '#16a34a', '#f97316', '#dc2626'],
+                        borderRadius: 4,
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function (items) { return items[0].label; },
+                                afterLabel: showRevenue ? function (item) {
+                                    return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(data[item.dataIndex].revenue) + '₫';
+                                } : undefined
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        renderRankingChart('topProductsChart', 'topProductsData', true);
+        renderRankingChart('slowProductsChart', 'slowProductsData', false);
+
+        const categoryCanvas = document.getElementById('categoryChart');
+        const categoryData = readChartData('categoryData');
+        if (categoryCanvas && categoryData.length > 0) {
+            new Chart(categoryCanvas, {
+                type: 'pie',
+                data: {
+                    labels: categoryData.map(function (item) { return item.label; }),
+                    datasets: [{
+                        data: categoryData.map(function (item) { return item.value; }),
+                        backgroundColor: categoryData.map(function (_, index) { return chartColors[index % chartColors.length]; }),
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+    </script>
 </body>
 </html>

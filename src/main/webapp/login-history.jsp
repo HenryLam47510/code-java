@@ -20,45 +20,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=2003store-20260921">
 </head>
 <body class="dashboard-page">
-    <aside class="sidebar">
-        <h2>2003 STORE</h2>
-        <nav class="sidebar-nav">
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}<%= dashboardRoute %>">Dashboard</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}<%= dashboardRoute %>">Tổng quan</a>
-                    <a href="${pageContext.request.contextPath}/reports">Báo cáo</a>
-                    <a href="${pageContext.request.contextPath}/staff-report">Báo cáo nhân viên</a>
-                </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/products">Sản phẩm</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/products">Tất cả sản phẩm</a>
-                    <a href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-                    <a href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-                </div>
-            </div>
-            <div class="nav-group">
-                <a class="nav-main" href="${pageContext.request.contextPath}/orders">Đơn hàng</a>
-                <div class="nav-submenu">
-                    <a href="${pageContext.request.contextPath}/orders">Danh sách</a>
-                    <a href="${pageContext.request.contextPath}/invoices">Hóa đơn</a>
-                    <a href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-                </div>
-            </div>
-            <a class="single-link" href="${pageContext.request.contextPath}/customers">Khách hàng</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock">Nhập kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/stock-out">Xuất kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-report">Báo cáo kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/suppliers">Nhà cung cấp</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/inventory-check">Kiểm kho</a>
-            <a class="single-link" href="${pageContext.request.contextPath}/employees">Nhân viên</a>
-            <a class="single-link active" href="${pageContext.request.contextPath}/login-history">Lịch sử đăng nhập</a>
-            <div class="nav-divider"></div>
-            <a class="single-link" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
-        </nav>
-    </aside>
+    <%@ include file="/WEB-INF/sidebar.jsp" %>
 
     <main class="main-panel dashboard-shell">
         <div class="workspace-col">
