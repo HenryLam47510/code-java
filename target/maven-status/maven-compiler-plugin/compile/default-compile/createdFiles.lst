@@ -4,6 +4,7 @@ com\_2003store\dao\OrderDao.class
 com\_2003store\model\StockReceipt.class
 com\_2003store\servlet\InitServlet.class
 com\_2003store\dao\EmployeeDao.class
+com\_2003store\model\ProductSalesStat.class
 com\_2003store\dao\InvoiceDao.class
 com\_2003store\model\User.class
 com\_2003store\model\OrderItem.class
@@ -33,6 +34,7 @@ com\_2003store\service\PaymentConfigDao.class
 com\_2003store\service\PaymentConfigDao$PaymentConfigRecord.class
 com\_2003store\servlet\OrderServlet.class
 com\_2003store\dao\InventoryReportDao.class
+com\_2003store\model\CategoryStat.class
 com\_2003store\servlet\LoginServlet.class
 com\_2003store\servlet\InventoryReportServlet.class
 com\_2003store\model\Product.class
@@ -55,4 +57,5 @@ com\_2003store\model\Invoice.class
 com\_2003store\model\Supplier.class
 com\_2003store\service\AuthService.class
 com\_2003store\model\OrderNotification.class
+com\_2003store\config\Utf8EncodingFilter.class
 com\_2003store\dao\CustomerDao.class

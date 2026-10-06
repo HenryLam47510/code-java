@@ -251,6 +251,12 @@ textarea {
     border: 1px solid transparent;
     overflow: hidden;
     letter-spacing: 0.01em;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    white-space: normal;
+    word-break: break-word;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
 .nav-main::before,
@@ -584,7 +590,7 @@ textarea {
 
 .stat-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(145px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
     gap: 18px;
 }
 
@@ -1419,6 +1425,44 @@ th, td {
     place-items: center;
     padding: 20px;
     font-size: 0.88rem;
+}
+
+.sales-ranking-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.sales-ranking-table {
+    min-width: 420px;
+    font-size: 0.84rem;
+}
+
+.sales-ranking-table th,
+.sales-ranking-table td {
+    padding: 10px 8px;
+}
+
+.sales-ranking-table th:first-child,
+.sales-ranking-table td:first-child,
+.sales-ranking-table th:nth-child(n + 3),
+.sales-ranking-table td:nth-child(n + 3) {
+    white-space: nowrap;
+}
+
+.sales-ranking-table th:nth-child(n + 3),
+.sales-ranking-table td:nth-child(n + 3) {
+    text-align: right;
+}
+
+.sales-ranking-table td:first-child {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.sales-ranking-empty {
+    color: var(--muted);
+    text-align: center !important;
+    padding: 22px 8px !important;
 }
 
 .category-analytics-panel {

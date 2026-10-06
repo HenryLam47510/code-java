@@ -100,7 +100,7 @@
                         <p class="label">Tiền mặt</p>
                         <span class="icon-pill">◔</span>
                     </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayRevenue")) %>₫</p>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayCashRevenue")) %>₫</p>
                     <span class="trend">▲ 5.1%</span>
                 </article>
                 <article class="stat-card accent-purple">
@@ -108,8 +108,16 @@
                         <p class="label">Chuyển khoản</p>
                         <span class="icon-pill">⬢</span>
                     </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("thisMonthRevenue")) %>₫</p>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayTransferRevenue")) %>₫</p>
                     <span class="trend">▲ 9.3%</span>
+                </article>
+                <article class="stat-card accent-blue">
+                    <div class="stat-meta">
+                        <p class="label">Tiền mặt + chuyển khoản</p>
+                        <span class="icon-pill">Σ</span>
+                    </div>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayCashAndTransferRevenue")) %>₫</p>
+                    <span class="trend">Tổng doanh thu hôm nay</span>
                 </article>
             </section>
 
@@ -180,14 +188,29 @@
                             <h3>Top 5 sản phẩm bán chạy</h3>
                             <span class="muted">${salesFrom} - ${salesTo}</span>
                         </div>
-                        <div class="analytics-chart">
-                            <c:choose>
-                                <c:when test="${not empty topProducts}"><canvas id="topProductsChart" aria-label="Biểu đồ top sản phẩm bán chạy" role="img"></canvas></c:when>
-                                <c:otherwise><p class="empty-chart">Chưa có đơn đã thanh toán trong khoảng thời gian này.</p></c:otherwise>
-                            </c:choose>
-                        </div>
-                        <div class="chart-data" id="topProductsData">
-                            <c:forEach items="${topProducts}" var="item"><span data-label="${fn:escapeXml(item.productName)}" data-value="${item.quantitySold}" data-revenue="${item.revenue}"></span></c:forEach>
+                        <div class="sales-ranking-table-wrap">
+                            <table class="sales-ranking-table">
+                                <thead>
+                                    <tr><th scope="col">#</th><th scope="col">Sản phẩm</th><th scope="col">Đã bán</th><th scope="col">Doanh thu</th></tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty topProducts}">
+                                            <c:forEach items="${topProducts}" var="item" varStatus="loop">
+                                                <tr>
+                                                    <td>${loop.count}</td>
+                                                    <td><c:out value="${item.productName}"/></td>
+                                                    <td><fmt:formatNumber value="${item.quantitySold}" type="number"/> đôi</td>
+                                                    <td><fmt:formatNumber value="${item.revenue}" type="number" maxFractionDigits="0"/>₫</td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr><td colspan="4" class="sales-ranking-empty">Chưa có sản phẩm được bán trong kỳ này.</td></tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
                         </div>
                     </article>
 
@@ -196,14 +219,29 @@
                             <h3>Top 5 sản phẩm bán chậm</h3>
                             <span class="muted">${salesFrom} - ${salesTo}</span>
                         </div>
-                        <div class="analytics-chart">
-                            <c:choose>
-                                <c:when test="${not empty slowProducts}"><canvas id="slowProductsChart" aria-label="Biểu đồ top sản phẩm bán chậm" role="img"></canvas></c:when>
-                                <c:otherwise><p class="empty-chart">Chưa có sản phẩm để thống kê.</p></c:otherwise>
-                            </c:choose>
-                        </div>
-                        <div class="chart-data" id="slowProductsData">
-                            <c:forEach items="${slowProducts}" var="item"><span data-label="${fn:escapeXml(item.productName)}" data-value="${item.quantitySold}"></span></c:forEach>
+                        <div class="sales-ranking-table-wrap">
+                            <table class="sales-ranking-table">
+                                <thead>
+                                    <tr><th scope="col">#</th><th scope="col">Sản phẩm</th><th scope="col">Đã bán</th><th scope="col">Doanh thu</th></tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty slowProducts}">
+                                            <c:forEach items="${slowProducts}" var="item" varStatus="loop">
+                                                <tr>
+                                                    <td>${loop.count}</td>
+                                                    <td><c:out value="${item.productName}"/></td>
+                                                    <td><fmt:formatNumber value="${item.quantitySold}" type="number"/> đôi</td>
+                                                    <td><fmt:formatNumber value="${item.revenue}" type="number" maxFractionDigits="0"/>₫</td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr><td colspan="4" class="sales-ranking-empty">Chưa có sản phẩm để thống kê.</td></tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
                         </div>
                     </article>
 
@@ -400,44 +438,6 @@
                 };
             });
         }
-        function renderRankingChart(canvasId, dataId, showRevenue) {
-            const canvas = document.getElementById(canvasId);
-            const data = readChartData(dataId);
-            if (!canvas || data.length === 0) return;
-            new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels: data.map(function (item) { return item.label; }),
-                    datasets: [{
-                        label: 'Số đôi đã bán',
-                        data: data.map(function (item) { return item.value; }),
-                        backgroundColor: ['#2563eb', '#0d9488', '#16a34a', '#f97316', '#dc2626'],
-                        borderRadius: 4,
-                        maxBarThickness: 30
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: function (items) { return items[0].label; },
-                                afterLabel: showRevenue ? function (item) {
-                                    return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(data[item.dataIndex].revenue) + '₫';
-                                } : undefined
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        renderRankingChart('topProductsChart', 'topProductsData', true);
-        renderRankingChart('slowProductsChart', 'slowProductsData', false);
-
         const categoryCanvas = document.getElementById('categoryChart');
         const categoryData = readChartData('categoryData');
         if (categoryCanvas && categoryData.length > 0) {

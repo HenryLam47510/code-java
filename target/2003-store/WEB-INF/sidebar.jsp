@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%
     com._2003store.model.User sharedSidebarUser = (com._2003store.model.User) session.getAttribute("user");
     com._2003store.service.AuthService sharedSidebarAuth = new com._2003store.service.AuthService();

@@ -16,22 +16,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReportDao {
+    private static final String ELIGIBLE_ORDER_CONDITION =
+            "(is_hidden IS NULL OR is_hidden = false) AND status IN (?, ?) " +
+                    "AND payment_status IN (?, ?, ?, ?, ?, ?)";
     private static final String ELIGIBLE_SALES = "SELECT oi.product_id, SUM(oi.quantity) AS quantity_sold, " +
             "SUM(oi.quantity * oi.unit_price) AS revenue FROM order_items oi " +
             "JOIN orders o ON o.id = oi.order_id " +
-            "WHERE o.status IN (?, ?) AND o.payment_status IN (?, ?, ?, ?, ?, ?) " +
+            "WHERE " + ELIGIBLE_ORDER_CONDITION + " " +
             "AND o.created_at >= ? AND o.created_at < ? GROUP BY oi.product_id";
 
     public List<RevenuePoint> getDailyRevenueForLast7Days() {
         List<RevenuePoint> points = new ArrayList<>();
         String sql = "SELECT DATE(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total " +
-                "FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
+                "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                " AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
                 "GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC";
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            bindEligibleOrderStatuses(stmt, 1);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -42,13 +48,16 @@ public class ReportDao {
     public List<RevenuePoint> getMonthlyRevenueForLast6Months() {
         List<RevenuePoint> points = new ArrayList<>();
         String sql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS label, COALESCE(SUM(total_amount), 0) AS total " +
-                "FROM orders WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH) " +
+                "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                " AND created_at >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH) " +
                 "GROUP BY DATE_FORMAT(created_at, '%Y-%m') ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC";
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            bindEligibleOrderStatuses(stmt, 1);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -59,13 +68,14 @@ public class ReportDao {
     public List<RevenuePoint> getRevenueByDateRange(String from, String to) {
         List<RevenuePoint> points = new ArrayList<>();
         String sql = "SELECT DATE(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total " +
-                "FROM orders WHERE DATE(created_at) BETWEEN ? AND ? AND status IN (?, ?) GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC";
+                "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                " AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY) " +
+                "GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, from);
-            stmt.setString(2, to);
-            stmt.setString(3, "Da thanh toan");
-            stmt.setString(4, "Hoan thanh");
+            bindEligibleOrderStatuses(stmt, 1);
+            stmt.setString(9, from);
+            stmt.setString(10, to);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
@@ -81,16 +91,23 @@ public class ReportDao {
         List<RevenuePoint> points = new ArrayList<>();
         String sql;
         if ("month".equals(view)) {
-            sql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS label, COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE status IN (?, ?) AND created_at >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH) GROUP BY DATE_FORMAT(created_at, '%Y-%m') ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC";
+            sql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS label, COALESCE(SUM(total_amount), 0) AS total " +
+                    "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                    " AND created_at >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH) " +
+                    "GROUP BY DATE_FORMAT(created_at, '%Y-%m') ORDER BY DATE_FORMAT(created_at, '%Y-%m') ASC";
         } else if ("year".equals(view)) {
-            sql = "SELECT YEAR(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE status IN (?, ?) GROUP BY YEAR(created_at) ORDER BY YEAR(created_at) ASC";
+            sql = "SELECT YEAR(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total " +
+                    "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                    " GROUP BY YEAR(created_at) ORDER BY YEAR(created_at) ASC";
         } else {
-            sql = "SELECT DATE(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE status IN (?, ?) AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC";
+            sql = "SELECT DATE(created_at) AS label, COALESCE(SUM(total_amount), 0) AS total " +
+                    "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION +
+                    " AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) " +
+                    "GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC";
         }
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, "Da thanh toan");
-            stmt.setString(2, "Hoan thanh");
+            bindEligibleOrderStatuses(stmt, 1);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     points.add(new RevenuePoint(rs.getString("label"), rs.getBigDecimal("total")));
@@ -146,7 +163,7 @@ public class ReportDao {
     public int getTotalUnitsSold(Timestamp from, Timestamp toExclusive) {
         String sql = "SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi " +
                 "JOIN orders o ON o.id = oi.order_id " +
-                "WHERE o.status IN (?, ?) AND o.payment_status IN (?, ?, ?, ?, ?, ?) " +
+                "WHERE " + ELIGIBLE_ORDER_CONDITION + " " +
                 "AND o.created_at >= ? AND o.created_at < ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -188,15 +205,19 @@ public class ReportDao {
     }
 
     private void bindEligibleSalesRange(PreparedStatement stmt, Timestamp from, Timestamp toExclusive) throws SQLException {
-        stmt.setString(1, OrderStatus.PAID);
-        stmt.setString(2, OrderStatus.COMPLETED);
-        stmt.setString(3, OrderStatus.PAID_PAYMENT);
-        stmt.setString(4, OrderStatus.PAID);
-        stmt.setString(5, OrderStatus.COMPLETED);
-        stmt.setString(6, "paid");
-        stmt.setString(7, "completed");
-        stmt.setString(8, "thanh toan thanh cong");
+        bindEligibleOrderStatuses(stmt, 1);
         stmt.setTimestamp(9, from);
         stmt.setTimestamp(10, toExclusive);
+    }
+
+    private void bindEligibleOrderStatuses(PreparedStatement stmt, int firstParameter) throws SQLException {
+        stmt.setString(firstParameter, OrderStatus.PAID);
+        stmt.setString(firstParameter + 1, OrderStatus.COMPLETED);
+        stmt.setString(firstParameter + 2, OrderStatus.PAID_PAYMENT);
+        stmt.setString(firstParameter + 3, OrderStatus.PAID);
+        stmt.setString(firstParameter + 4, OrderStatus.COMPLETED);
+        stmt.setString(firstParameter + 5, "paid");
+        stmt.setString(firstParameter + 6, "completed");
+        stmt.setString(firstParameter + 7, "thanh toan thanh cong");
     }
 }

@@ -4,6 +4,15 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
 
+    <filter>
+        <filter-name>Utf8EncodingFilter</filter-name>
+        <filter-class>com._2003store.config.Utf8EncodingFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>Utf8EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

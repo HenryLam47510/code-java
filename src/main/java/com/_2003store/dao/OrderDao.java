@@ -57,6 +57,40 @@ public class OrderDao {
         return BigDecimal.ZERO;
     }
 
+    public BigDecimal getRevenueByDateAndPaymentMethods(String dateSql, String... paymentMethods) {
+        if (paymentMethods == null || paymentMethods.length == 0) {
+            throw new IllegalArgumentException("At least one payment method is required.");
+        }
+
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < paymentMethods.length; i++) {
+            if (i > 0) {
+                placeholders.append(", ");
+            }
+            placeholders.append("?");
+        }
+
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders " +
+                "WHERE DATE(created_at) = ? AND status IN (?, ?) AND payment_method IN (" + placeholders + ")";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, dateSql);
+            stmt.setString(2, OrderStatus.PAID);
+            stmt.setString(3, OrderStatus.COMPLETED);
+            for (int i = 0; i < paymentMethods.length; i++) {
+                stmt.setString(i + 4, paymentMethods[i]);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
     public BigDecimal getRevenueByMonth(String monthSql) {
         String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE DATE_FORMAT(created_at, '%Y-%m') = ? AND status IN (?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();

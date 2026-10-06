@@ -63,6 +63,9 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("totalRevenue", statsService.getTotalRevenue());
         request.setAttribute("totalOrders", statsService.getTotalOrders());
         request.setAttribute("todayRevenue", statsService.getTodayRevenue());
+        request.setAttribute("todayCashRevenue", statsService.getTodayCashRevenue());
+        request.setAttribute("todayTransferRevenue", statsService.getTodayTransferRevenue());
+        request.setAttribute("todayCashAndTransferRevenue", statsService.getTodayCashAndTransferRevenue());
         request.setAttribute("thisMonthRevenue", statsService.getThisMonthRevenue());
         request.setAttribute("revenueSeries", reportDao.getRevenueSeries("day"));
         request.setAttribute("recentOrders", statsService.getRecentOrders());

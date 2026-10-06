@@ -50,7 +50,23 @@ public class StatsService {
     }
 
     public BigDecimal getTodayRevenue() {
-        return orderDao.getRevenueByDate(LocalDate.now().toString());
+        return getTodayCashRevenue().add(getTodayTransferRevenue());
+    }
+
+    public BigDecimal getTodayCashRevenue() {
+        return orderDao.getRevenueByDateAndPaymentMethods(LocalDate.now().toString(), OrderStatus.CASH);
+    }
+
+    public BigDecimal getTodayTransferRevenue() {
+        return orderDao.getRevenueByDateAndPaymentMethods(
+                LocalDate.now().toString(),
+                OrderStatus.BANK_TRANSFER,
+                OrderStatus.MOMO
+        );
+    }
+
+    public BigDecimal getTodayCashAndTransferRevenue() {
+        return getTodayCashRevenue().add(getTodayTransferRevenue());
     }
 
     public BigDecimal getThisMonthRevenue() {
