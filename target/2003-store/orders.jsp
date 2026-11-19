@@ -271,6 +271,7 @@
                         </div>
                         <% } %>
                         <textarea name="transactionNote" placeholder="Ghi chú xác nhận thanh toán"><%= selectedOrder.getTransactionNote() != null ? selectedOrder.getTransactionNote() : "" %></textarea>
+                        <textarea name="cancelReason" placeholder="Lý do hủy đơn (bắt buộc khi hủy)"></textarea>
                         <div class="detail-actions">
                             <button type="submit" name="action" value="cancel-order" class="btn btn-danger">Hủy đơn</button>
                             <% if (!"BANK_TRANSFER".equalsIgnoreCase(selectedOrder.getPaymentMethod())) { %>

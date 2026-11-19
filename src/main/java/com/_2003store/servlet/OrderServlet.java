@@ -204,7 +204,13 @@ public class OrderServlet extends HttpServlet {
             order.setQrCode(VietQrService.generateQrUrl(total, ""));
         }
 
-        orderDao.createOrder(order, items);
-        response.sendRedirect(request.getContextPath() + "/orders");
+        OrderDao.CreateOrderResult createResult = orderDao.createOrder(order, items);
+        if (!createResult.isSuccess()) {
+            response.sendRedirect(request.getContextPath() + "/orders?error="
+                    + URLEncoder.encode(createResult.getMessage(), StandardCharsets.UTF_8));
+            return;
+        }
+        response.sendRedirect(request.getContextPath() + "/orders?success="
+                + URLEncoder.encode(createResult.getMessage(), StandardCharsets.UTF_8));
     }
 }

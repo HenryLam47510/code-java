@@ -29,6 +29,7 @@ com\_2003store\config\DatabaseConfig.class
 com\_2003store\servlet\InvoiceServlet.class
 com\_2003store\dao\WarehouseDetailDao.class
 com\_2003store\servlet\CustomerServlet.class
+com\_2003store\dao\OrderDao$CreateOrderResult.class
 com\_2003store\model\WarehouseDetail.class
 com\_2003store\model\Customer.class
 com\_2003store\servlet\StockReceiptServlet.class

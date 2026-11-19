@@ -14,7 +14,9 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OrderDao {
     public OrderDao() {
@@ -208,11 +210,71 @@ public class OrderDao {
         return 0;
     }
 
-    public void createOrder(Order order, List<OrderItem> items) {
+    public static class CreateOrderResult {
+        private final boolean success;
+        private final String message;
+
+        public CreateOrderResult(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+
+        public boolean isSuccess() { return success; }
+        public String getMessage() { return message; }
+    }
+
+    public CreateOrderResult createOrder(Order order, List<OrderItem> items) {
         String dateKey = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
-        String orderSql = "INSERT INTO orders (customer_name, phone, status, payment_method, payment_status, transaction_note, qr_code, is_hidden, cancel_reason, total_amount, order_code) VALUES (?, ?, ?, ?, ?, ?, ?, false, null, ?, ?)";
+        String orderSql = "INSERT INTO orders (customer_name, phone, status, payment_method, payment_status, transaction_note, qr_code, is_hidden, cancel_reason, total_amount, order_code, stock_deducted) VALUES (?, ?, ?, ?, ?, ?, ?, false, null, ?, ?, true)";
         try (Connection conn = DatabaseConfig.getConnection()) {
             conn.setAutoCommit(false);
+
+            Map<Integer, OrderItem> aggregatedItems = new LinkedHashMap<>();
+            for (OrderItem item : items) {
+                OrderItem existing = aggregatedItems.get(item.getProductId());
+                if (existing == null) {
+                    aggregatedItems.put(item.getProductId(), item);
+                } else {
+                    existing.setQuantity(existing.getQuantity() + item.getQuantity());
+                }
+            }
+
+            for (OrderItem item : aggregatedItems.values()) {
+                if (item.getQuantity() <= 0) {
+                    conn.rollback();
+                    return new CreateOrderResult(false, "Số lượng sản phẩm phải lớn hơn 0.");
+                }
+
+                try (PreparedStatement lockStmt = conn.prepareStatement(
+                        "SELECT stock, name FROM products WHERE id = ? AND (is_deleted IS NULL OR is_deleted = false) FOR UPDATE")) {
+                    lockStmt.setInt(1, item.getProductId());
+                    try (ResultSet rs = lockStmt.executeQuery()) {
+                        if (!rs.next()) {
+                            conn.rollback();
+                            return new CreateOrderResult(false, "Sản phẩm không tồn tại hoặc đã bị khóa.");
+                        }
+                        int currentStock = rs.getInt("stock");
+                        if (currentStock < item.getQuantity()) {
+                            conn.rollback();
+                            return new CreateOrderResult(false,
+                                    "Không đủ tồn kho cho sản phẩm " + rs.getString("name")
+                                            + ". Tồn kho hiện tại: " + currentStock);
+                        }
+                    }
+                }
+
+                try (PreparedStatement stockStmt = conn.prepareStatement(
+                        "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND (is_deleted IS NULL OR is_deleted = false)")) {
+                    stockStmt.setInt(1, item.getQuantity());
+                    stockStmt.setInt(2, item.getProductId());
+                    stockStmt.setInt(3, item.getQuantity());
+                    if (stockStmt.executeUpdate() != 1) {
+                        conn.rollback();
+                        return new CreateOrderResult(false, "Tồn kho thay đổi trong lúc tạo đơn. Vui lòng thử lại.");
+                    }
+                }
+            }
+
             String lockSql = "SELECT next_sequence FROM order_code_sequence WHERE date_key = ? FOR UPDATE";
             int nextSequence;
             try (PreparedStatement lockStmt = conn.prepareStatement(lockSql)) {
@@ -240,7 +302,7 @@ public class OrderDao {
             try (PreparedStatement stmt = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, order.getCustomerName());
                 stmt.setString(2, order.getPhone());
-                stmt.setString(3, OrderStatus.isPaidStatus(order.getStatus()) ? order.getStatus() : OrderStatus.PENDING_CONFIRMATION);
+                stmt.setString(3, OrderStatus.PENDING_CONFIRMATION);
                 stmt.setString(4, order.getPaymentMethod());
                 stmt.setString(5, order.getPaymentStatus() == null ? "CHUA_THANH_TOAN" : order.getPaymentStatus());
                 stmt.setString(6, order.getTransactionNote());
@@ -254,26 +316,29 @@ public class OrderDao {
                 stmt.executeUpdate();
 
                 try (ResultSet keys = stmt.getGeneratedKeys()) {
-                    if (keys.next()) {
-                        int orderId = keys.getInt(1);
-                        String itemSql = "INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price) VALUES (?, ?, ?, ?, ?)";
-                        try (PreparedStatement itemStmt = conn.prepareStatement(itemSql)) {
-                            for (OrderItem item : items) {
-                                itemStmt.setInt(1, orderId);
-                                itemStmt.setInt(2, item.getProductId());
-                                itemStmt.setString(3, item.getProductName());
-                                itemStmt.setInt(4, item.getQuantity());
-                                itemStmt.setBigDecimal(5, item.getUnitPrice());
-                                itemStmt.addBatch();
-                            }
-                            itemStmt.executeBatch();
+                    if (!keys.next()) {
+                        throw new SQLException("Không thể lấy mã đơn hàng vừa tạo.");
+                    }
+                    int orderId = keys.getInt(1);
+                    try (PreparedStatement itemStmt = conn.prepareStatement(
+                            "INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price) VALUES (?, ?, ?, ?, ?)")) {
+                        for (OrderItem item : aggregatedItems.values()) {
+                            itemStmt.setInt(1, orderId);
+                            itemStmt.setInt(2, item.getProductId());
+                            itemStmt.setString(3, item.getProductName());
+                            itemStmt.setInt(4, item.getQuantity());
+                            itemStmt.setBigDecimal(5, item.getUnitPrice());
+                            itemStmt.addBatch();
                         }
+                        itemStmt.executeBatch();
                     }
                 }
             }
             conn.commit();
+            return new CreateOrderResult(true, "Tạo đơn hàng thành công.");
         } catch (SQLException e) {
             e.printStackTrace();
+            return new CreateOrderResult(false, "Không thể tạo đơn hàng do lỗi cơ sở dữ liệu.");
         }
     }
 
@@ -308,6 +373,7 @@ public class OrderDao {
         try (Connection conn = DatabaseConfig.getConnection()) {
             conn.setAutoCommit(false);
             try {
+                boolean stockAlreadyDeducted = false;
                 String lockOrderSql = "SELECT status, payment_status, COALESCE(stock_deducted,false) stock_deducted FROM orders WHERE id = ? FOR UPDATE";
                 try (PreparedStatement lockStmt = conn.prepareStatement(lockOrderSql)) {
                     lockStmt.setInt(1, orderId);
@@ -316,27 +382,30 @@ public class OrderDao {
                             conn.rollback();
                             return false;
                         }
-                        if (rs.getBoolean("stock_deducted") || OrderStatus.isPaidStatus(rs.getString("status"))) {
+                        if (OrderStatus.isPaidStatus(rs.getString("status"))) {
                             conn.rollback();
                             return false;
                         }
+                        stockAlreadyDeducted = rs.getBoolean("stock_deducted");
                     }
                 }
 
-                String itemsSql = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
-                try (PreparedStatement itemsStmt = conn.prepareStatement(itemsSql)) {
-                    itemsStmt.setInt(1, orderId);
-                    try (ResultSet rs = itemsStmt.executeQuery()) {
-                        while (rs.next()) {
-                            int productId = rs.getInt("product_id");
-                            int quantity = rs.getInt("quantity");
-                            try (PreparedStatement stockStmt = conn.prepareStatement("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND (is_deleted IS NULL OR is_deleted = false)")) {
-                                stockStmt.setInt(1, quantity);
-                                stockStmt.setInt(2, productId);
-                                stockStmt.setInt(3, quantity);
-                                if (stockStmt.executeUpdate() != 1) {
-                                    conn.rollback();
-                                    return false;
+                if (!stockAlreadyDeducted) {
+                    String itemsSql = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+                    try (PreparedStatement itemsStmt = conn.prepareStatement(itemsSql)) {
+                        itemsStmt.setInt(1, orderId);
+                        try (ResultSet rs = itemsStmt.executeQuery()) {
+                            while (rs.next()) {
+                                int productId = rs.getInt("product_id");
+                                int quantity = rs.getInt("quantity");
+                                try (PreparedStatement stockStmt = conn.prepareStatement("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND (is_deleted IS NULL OR is_deleted = false)")) {
+                                    stockStmt.setInt(1, quantity);
+                                    stockStmt.setInt(2, productId);
+                                    stockStmt.setInt(3, quantity);
+                                    if (stockStmt.executeUpdate() != 1) {
+                                        conn.rollback();
+                                        return false;
+                                    }
                                 }
                             }
                         }
