@@ -12,24 +12,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StockIssueDao {
-    public void createIssue(StockIssue issue) {
-        String sql = "INSERT INTO stock_issues (product_id, product_name, quantity, reason, note) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, issue.getProductId());
-            stmt.setString(2, issue.getProductName());
-            stmt.setInt(3, issue.getQuantity());
-            stmt.setString(4, issue.getReason());
-            stmt.setString(5, issue.getNote());
-            stmt.executeUpdate();
-
-            Product product = new ProductDao().getProductById(issue.getProductId());
-            if (product != null && product.getStock() >= issue.getQuantity()) {
-                product.setStock(product.getStock() - issue.getQuantity());
-                new ProductDao().updateProduct(product);
+    public boolean createIssue(StockIssue issue) {
+        if (issue == null || issue.getQuantity() <= 0 || issue.getProductId() <= 0) {
+            return false;
+        }
+        String insertSql = "INSERT INTO stock_issues (product_id, product_name, quantity, reason, note) VALUES (?, ?, ?, ?, ?)";
+        String stockSql = "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND (is_deleted IS NULL OR is_deleted = false)";
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement stockStmt = conn.prepareStatement(stockSql)) {
+                stockStmt.setInt(1, issue.getQuantity());
+                stockStmt.setInt(2, issue.getProductId());
+                stockStmt.setInt(3, issue.getQuantity());
+                if (stockStmt.executeUpdate() != 1) {
+                    conn.rollback();
+                    return false;
+                }
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, issue.getProductId());
+                    insertStmt.setString(2, issue.getProductName());
+                    insertStmt.setInt(3, issue.getQuantity());
+                    insertStmt.setString(4, issue.getReason());
+                    insertStmt.setString(5, issue.getNote());
+                    insertStmt.executeUpdate();
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

@@ -1,242 +1,240 @@
-# 2003 Store - Java Servlet Management System
+﻿# Hệ thống quản lý cửa hàng giày dép 2003 Store
 
-A role-based retail management solution for a footwear store, built with Java Servlet, JSP, Maven, and MySQL. The system supports sales operations, inventory control, employee administration, reporting, and VietQR payment processing for a modern store workflow.
+![Giao diện 2003 Store](anh-ui.jpg)
 
-## Overview
-2003 Store is a Java web application designed for store operations with a shared database and a multi-role dashboard model. It is optimized for internal store management and helps teams manage sales, inventory, reporting, and bank transfer confirmation in a single platform.
+> Ứng dụng web nội bộ hỗ trợ bán hàng, quản lý kho, nhân viên và báo cáo kinh doanh cho cửa hàng giày 2003 Store.
 
-### Highlights
-- Role-based dashboard for Admin, Manager, and Employee
-- Permission-aware access control for backend routes and UI menus
-- Product, order, customer, and supplier management
-- Warehouse and stock tracking workflows
-- Revenue and staff reporting
-- VietQR-compatible payment configuration and QR-based payment confirmation flow
-- Modern dashboard UI tailored for operational usage
+## 1. Tên dự án
+Tên website: 2003 Store  
+Mô tả: Hệ thống quản lý bán hàng và kho dành cho cửa hàng giày dép, được xây dựng bằng Java Servlet/JSP theo mô hình phân quyền người dùng.
 
-## Tech Stack
-- Java 17
-- Maven
-- Servlet 5.0
-- JSP / JSTL
-- HTML / CSS / JavaScript
-- JDBC / MySQL
-- JUnit 5
+## 2. Giới thiệu
 
-## Tài khoản demo + flow đăng nhập
-Có sẵn các tài khoản demo cho phân quyền:
+### Mục đích
 
-- Admin
-  - Username: `admin`
-  - Password: `123456`
-  - Mục tiêu: quản trị toàn hệ thống, xem báo cáo, quản lý nhân sự, cấu hình hệ thống
+- Quản lý sản phẩm, đơn hàng, khách hàng và nhà cung cấp.
+- Theo dõi nhập kho, xuất kho và kiểm kê tồn kho.
+- Hỗ trợ nhân viên tạo đơn hàng và xác nhận thanh toán.
+- Cung cấp báo cáo doanh thu, tồn kho và hoạt động nhân viên.
+- Phân quyền chức năng phù hợp cho từng vai trò trong cửa hàng.
 
-- Manager
-  - Username: `manager`
-  - Password: `123456`
-  - Mục tiêu: quản lý vận hành cửa hàng, đơn hàng, sản phẩm, nhập/xuất/kiểm kho, báo cáo kho
+### Đối tượng sử dụng
 
-- Employee / Staff
-  - Username: `staff` hoặc `employee`
-  - Password: `123456`
-  - Mục tiêu: thao tác bán hàng, xem sản phẩm, tạo đơn, xử lý khách hàng
+- **Quản trị viên (Admin):** quản lý toàn bộ hệ thống, nhân sự và cấu hình.
+- **Quản lý (Manager):** vận hành kho, đơn hàng, sản phẩm và theo dõi báo cáo.
+- **Nhân viên (Staff/Employee):** bán hàng, quản lý khách hàng và xử lý đơn.
 
-- Cashier
-  - Username: `cashier`
-  - Password: `123456`
-  - Mục tiêu: xác nhận thanh toán, xử lý các đơn chuyển khoản / VietQR
+## 3. Công nghệ
 
-### Flow đăng nhập
-1. Truy cập trang login của ứng dụng.
-2. Nhập username và password tương ứng với tài khoản demo.
-3. Sau khi đăng nhập thành công, hệ thống sẽ tự redirect theo vai trò:
-   - Admin -> `/dashboard/admin`
-   - Manager -> `/dashboard/manager`
-   - Employee -> `/dashboard/employee`
-4. Từ dashboard, người dùng chỉ nhìn thấy menu và chức năng được phép theo quyền.
-5. Nếu truy cập thẳng vào URL không được phép, hệ thống sẽ trả về lỗi `403 Forbidden`.
+| Thành phần | Công nghệ |
+|---|---|
+| Ngôn ngữ | Java 17 |
+| Backend | Jakarta Servlet 5.0, JDBC |
+| Frontend | JSP, JSTL, HTML, CSS, JavaScript |
+| Cơ sở dữ liệu | MySQL 8 |
+| Build tool | Apache Maven |
+| Máy chủ ứng dụng | Apache Tomcat 10.1+ |
+| Thư viện thanh toán | VietQR |
+| Kiểm thử | JUnit 5 |
 
-## Chạy dự án
-Yêu cầu: JDK 17, Maven và MySQL đang chạy.
+## 4. Chức năng
 
-1. Vào thư mục dự án.
-2. Chạy:
+- Đăng nhập và phân quyền theo vai trò: `ADMIN`, `MANAGER`, `EMPLOYEE`.
+- Dashboard tổng quan với dữ liệu doanh thu, đơn hàng và hoạt động cửa hàng.
+- Quản lý sản phẩm: tạo mới, sửa, tìm kiếm, lọc và khóa sản phẩm.
+- Quản lý khách hàng, nhà cung cấp và nhân viên.
+- Tạo đơn hàng, xem chi tiết, cập nhật trạng thái và thanh toán.
+- Quản lý nhập kho, xuất kho, kiểm kê và chi tiết kho.
+- Báo cáo doanh thu theo ngày, tháng và năm.
+- Báo cáo tồn kho và hiệu suất nhân viên.
+- Lưu nhật ký đăng nhập.
+- Tạo mã QR VietQR và cấu hình thông tin tài khoản nhận tiền.
+- Kiểm tra quyền truy cập ở cả giao diện và Servlet phía server.
+
+## 5. Giao diện
+
+### Giao diện tổng quan
+
+![Giao diện 2003 Store](anh-ui.jpg)
+
+Các trang chính của hệ thống bao gồm:
+
+- Trang đăng nhập và chuyển hướng theo vai trò.
+- Dashboard quản trị với biểu đồ doanh thu và đơn hàng gần đây.
+- Trang quản lý sản phẩm, khách hàng, đơn hàng và nhà cung cấp.
+- Trang nhập kho, xuất kho, kiểm kê và báo cáo thống kê.
+
+## 6. Cấu trúc project
+
+```text
+2003 Store/
+├── src/
+│   ├── main/
+│   │   ├── java/com/_2003store/
+│   │   │   ├── config/       # Cấu hình database và UTF-8
+│   │   │   ├── dao/          # Truy cập và thao tác dữ liệu JDBC
+│   │   │   ├── model/        # Các đối tượng dữ liệu
+│   │   │   ├── service/      # Logic nghiệp vụ, xác thực và báo cáo
+│   │   │   └── servlet/      # Controller xử lý request/response
+│   │   └── webapp/
+│   │       ├── css/          # Giao diện CSS
+│   │       ├── WEB-INF/      # Cấu hình web và sidebar chung
+│   │       └── *.jsp         # Trang giao diện theo chức năng
+│   └── test/java/            # Unit test JUnit 5
+├── Dump20261006.sql          # File dump MySQL
+├── pom.xml                   # Cấu hình Maven và dependencies
+└── README.md
+```
+
+## 7. Yêu cầu môi trường
+
+- JDK 17 trở lên.
+- Apache Maven 3.8 trở lên.
+- Apache Tomcat 10.1+ hỗ trợ Jakarta Servlet 5.
+- MySQL 8.0 trở lên.
+- IDE khuyến nghị: IntelliJ IDEA, Eclipse hoặc VS Code.
+- Trình duyệt hiện đại: Chrome, Edge hoặc Firefox.
+
+Kiểm tra công cụ đã cài:
+
+```bash
+java -version
+mvn -v
+mysql --version
+```
+
+## 8. Cài đặt
+
+### 1. Clone repository
+
+```bash
+git clone https://github.com/HenryLam47510/code-java.git
+cd code-java
+```
+
+### 2. Tạo và import database
+
+Thực hiện trong MySQL:
+
+```sql
+CREATE DATABASE 2003_store
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+Sau đó import file dump:
+
+```bash
+mysql -u root -p 2003_store < Dump20261006.sql
+```
+
+Trên MySQL Workbench, có thể mở `Dump20261006.sql`, chọn database `2003_store` và chạy toàn bộ script.
+
+### 3. Cấu hình kết nối database
+
+Mặc định, `DatabaseConfig` sử dụng:
+
+- URL: `jdbc:mysql://localhost:3306/2003_store`
+- User: `root`
+- Password: `dung123`
+
+Khuyến nghị thay thông tin bằng biến môi trường thay vì sửa trực tiếp mã nguồn:
+
+**Windows (PowerShell):**
+
+```powershell
+$env:DB_URL="jdbc:mysql://localhost:3306/2003_store?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+$env:DB_USER="root"
+$env:DB_PASSWORD="<mat-khau-mysql-cua-ban>"
+```
+
+**Linux/macOS:**
+
+```bash
+export DB_URL="jdbc:mysql://localhost:3306/2003_store?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+export DB_USER="root"
+export DB_PASSWORD="<mat-khau-mysql-cua-ban>"
+```
+
+## 9. Chạy project
+
+### Build bằng Maven
 
 ```bash
 mvn clean package
 ```
 
-3. Để chạy local test nhanh:
+File deploy được tạo tại:
 
-```bash
-mvn test
-```
-
-4. Dùng Tomcat hoặc server Java EE để deploy WAR được tạo tại:
-
-```bash
+```text
 target/2003-store.war
 ```
 
-> Nếu project đang được build dưới dạng WAR, sau khi package hoàn tất bạn có thể deploy file WAR vào Tomcat.
+### Deploy lên Tomcat
 
-## Cấu trúc chính
-- `src/main/java`: backend Java (Servlet, DAO, Service, model)
-- `src/main/webapp`: giao diện JSP, CSS, JS, file tĩnh
-- `src/main/webapp/WEB-INF/web.xml`: cấu hình ứng dụng
-- `src/test/java`: unit test cho logic nghiệp vụ và phân quyền
+1. Khởi động MySQL.
+2. Sao chép `target/2003-store.war` vào thư mục `webapps` của Tomcat.
+3. Khởi động Tomcat bằng `startup.bat` (Windows) hoặc `startup.sh` (Linux/macOS).
+4. Truy cập:
 
-## Tính năng chính
-- Dashboard theo role: Admin / Manager / Employee
-- Phân quyền truy cập theo module và chức năng
-- Quản lý sản phẩm, đơn hàng, khách hàng, nhân viên
-- Quản lý nhập kho, xuất kho, kiểm kho
-- Báo cáo doanh thu, báo cáo kho, báo cáo nhân viên
-- Nhật ký đăng nhập và lịch sử hoạt động
-- Quản lý nhà cung cấp
-- Thanh toán chuyển khoản VietQR với thông tin ngân hàng có thể cấu hình
-- Xác nhận thanh toán theo quyền riêng (`payment_confirm`)
-- Giao diện bán hàng, dashboard, và sidebar được chia theo từng vai trò
+```text
+http://localhost:8080/2003-store/
+```
 
-## Hướng dẫn sử dụng chi tiết theo từng role
+Nếu cấu hình server khác cổng mặc định, thay `8080` bằng cổng Tomcat đang sử dụng.
 
-### 1) Admin
-Admin is the highest-privilege user in the system.
-
-Primary goals:
-- oversee the entire store operation
-- manage employees and system users
-- review store-wide reports
-- configure payment settings and VietQR account info
-- monitor system activity and business performance
-
-Core functions:
-- admin dashboard overview
-- employee management
-- order management
-- product management
-- customer management
-- revenue reports
-- staff reports
-- login history
-- inventory checks
-- supplier management
-
-Notes:
-- Admin has access to most modules.
-- Admin can view and operate across the full application.
-
-### 2) Manager
-Manager focuses on daily operational control and warehouse execution.
-
-Primary goals:
-- manage sales and orders
-- oversee product inventory and stock movement
-- monitor warehouse and revenue performance
-- supervise team workflow
-
-Core functions:
-- management dashboard
-- order and sales workflows
-- product catalog
-- customer tracking
-- stock-in / stock-out / inventory check
-- inventory report
-- sales report
-- employee oversight
-- supplier records
-
-Notes:
-- Manager is more operational than administrative.
-- Manager does not have full system-level control like Admin.
-
-### 3) Employee
-Employee handles the front-line sales workflow.
-
-Primary goals:
-- create and manage sales transactions
-- view product information
-- maintain customer records
-- process routine operational tasks
-
-Core functions:
-- sales dashboard
-- create orders
-- view order list
-- manage product essentials
-- manage customer data
-- confirm payment when permitted
-
-Notes:
-- Employee is restricted from system administration modules.
-- If the account lacks `payment_confirm` permission, payment-related menu items are hidden.
-
-### 4) Cashier
-Cashier is a specialized employee role for payment flow.
-
-Primary goals:
-- verify incoming payment requests
-- confirm bank transfer / VietQR payments
-- support transaction completion
-
-Core functions:
-- view pending orders
-- monitor payment state
-- approve payment confirmation
-
-Notes:
-- Cashier still remains under employee-level role restrictions.
-- Payment approval is controlled by permission instead of role alone.
-
-## Role-based access
-The system supports three main role groups:
-
-- Admin: full system administration
-- Manager: inventory, warehouse, order, and operational reporting
-- Employee: sales and store-facing tasks with permission-based access
-
-Protected routes such as `/employees`, `/reports`, `/inventory-check`, `/login-history` are checked server-side to prevent direct unauthorized access.
-
-## Payment QR / VietQR
-The platform supports configuration of receiving bank information for QR payments, including:
-- bank code
-- account number
-- account holder name
-
-This config is used in the payment confirmation flow and can be displayed to customers for transfer-based payment.
-
-## Demo mockups
-The following sections are intended as visual placeholders for portfolio presentations and demo slides.
-
-### Dashboard mockup
-![Dashboard mockup](https://via.placeholder.com/1200x700?text=2003+Store+Dashboard+Mockup)
-
-### Sales / order workflow mockup
-![Sales workflow mockup](https://via.placeholder.com/1200x700?text=Order+Management+Mockup)
-
-### Inventory and reporting mockup
-![Inventory report mockup](https://via.placeholder.com/1200x700?text=Inventory+%26+Reporting+Mockup)
-
-## Deployment checklist
-Use the following checklist before presenting or deploying the project:
-
-- [ ] JDK 17 installed
-- [ ] Maven installed and working
-- [ ] MySQL running and database initialized
-- [ ] `mvn clean package` runs successfully
-- [ ] WAR file generated in `target/`
-- [ ] Tomcat or servlet container configured
-- [ ] Login credentials verified for demo roles
-- [ ] Role permissions confirmed for dashboard and modules
-- [ ] QR bank information updated in production config
-- [ ] Smoke test completed for sales, inventory, and reports
-
-## Testing
-Run the full test suite:
+### Chạy test
 
 ```bash
 mvn test
 ```
 
-## Notes
-This application uses a shared database and shared UI shell, while separating dashboard entry points and access permissions by role. That design keeps the project maintainable while giving each role a cleaner workflow and a more focused operational experience.
+## 10. Tài khoản demo
+
+Các tài khoản sau được lưu trong file SQL dump:
+
+| Vai trò | Tên đăng nhập | Mật khẩu | Quyền chính |
+|---|---|---|---|
+| Admin | `admin` | `123456` | Quản trị hệ thống, nhân viên, báo cáo và toàn bộ dữ liệu |
+| Quản lý | `manager` | `123456` | Quản lý kho, đơn hàng, sản phẩm, nhà cung cấp và báo cáo |
+| Nhân viên | `staff` | `123456` | Tạo đơn, xử lý bán hàng và quản lý khách hàng |
+
+Hệ thống cũng có tài khoản demo dự phòng trong `AuthService`:
+
+- `employee / 123456`: tài khoản nhân viên.
+- `cashier / 123456`: tài khoản thu ngân dành cho luồng thanh toán.
+
+## 11. Database
+
+File `Dump20261006.sql` chứa cấu trúc và dữ liệu mẫu cho database `2003_store`.
+
+Các bảng chính:
+
+- `employees`: tài khoản và vai trò nhân viên.
+- `employee_permissions`: quyền chi tiết theo từng tài khoản.
+- `products`: danh mục sản phẩm giày dép.
+- `customers`: thông tin khách hàng.
+- `orders` và `order_items`: đơn hàng và chi tiết đơn.
+- `suppliers`: nhà cung cấp.
+- `stock_receipts` và `stock_issues`: nhập kho và xuất kho.
+- `inventory_counts`: dữ liệu kiểm kê.
+- `payment_configs`: cấu hình VietQR.
+- `login_history`: lịch sử đăng nhập.
+
+Cách import bằng dòng lệnh:
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS 2003_store CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p 2003_store < Dump20261006.sql
+```
+
+## 12. Tác giả
+
+- **Người thực hiện:** Nguyễn Hoàng Lâm
+- **GitHub:** [HenryLam47510](https://github.com/HenryLam47510)
+- **Email:** nguyenhoanglam27032004@gmail.com
+- **Repository:** [HenryLam47510/code-java](https://github.com/HenryLam47510/code-java)
+
+## Giấy phép
+
+Dự án được phát triển cho mục đích học tập và phục vụ đồ án môn học. Khi sử dụng hoặc phân phối lại, vui lòng ghi nguồn repository gốc.

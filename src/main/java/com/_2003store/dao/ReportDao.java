@@ -4,6 +4,7 @@ import com._2003store.config.DatabaseConfig;
 import com._2003store.model.CategoryStat;
 import com._2003store.model.ProductSalesStat;
 import com._2003store.model.RevenuePoint;
+import com._2003store.model.RevenueDetail;
 import com._2003store.service.OrderStatus;
 
 import java.math.BigDecimal;
@@ -63,6 +64,121 @@ public class ReportDao {
             e.printStackTrace();
         }
         return points;
+    }
+
+    public ReportSummary getReportSummary(String from, String to, String view) {
+        String rangeClause;
+        if ("day".equals(view)) {
+            rangeClause = "AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY)";
+        } else if ("month".equals(view)) {
+            rangeClause = "AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 11 MONTH)";
+        } else {
+            rangeClause = "";
+        }
+
+        String sql = "SELECT COUNT(*) AS paid_orders, "
+                + "COALESCE(SUM(total_amount), 0) AS total_revenue, "
+                + "COALESCE(SUM(CASE WHEN payment_method = 'COD' THEN total_amount ELSE 0 END), 0) AS cash_revenue, "
+                + "COALESCE(SUM(CASE WHEN payment_method IN ('BANK_TRANSFER', 'MOMO') THEN total_amount ELSE 0 END), 0) AS transfer_revenue "
+                + "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION + " " + rangeClause;
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            bindEligibleOrderStatuses(stmt, 1);
+            if ("day".equals(view)) {
+                stmt.setString(9, from);
+                stmt.setString(10, to);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new ReportSummary(
+                            rs.getBigDecimal("total_revenue"),
+                            rs.getInt("paid_orders"),
+                            rs.getBigDecimal("cash_revenue"),
+                            rs.getBigDecimal("transfer_revenue"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new ReportSummary(BigDecimal.ZERO, 0, BigDecimal.ZERO, BigDecimal.ZERO);
+    }
+
+    public List<RevenueDetail> getRevenueDetails(String from, String to, String view) {
+        List<RevenueDetail> details = new ArrayList<>();
+        String labelExpression;
+        String rangeClause;
+        String groupExpression;
+
+        if ("month".equals(view)) {
+            labelExpression = "DATE_FORMAT(created_at, '%Y-%m')";
+            rangeClause = "AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 11 MONTH)";
+            groupExpression = "DATE_FORMAT(created_at, '%Y-%m')";
+        } else if ("year".equals(view)) {
+            labelExpression = "YEAR(created_at)";
+            rangeClause = "";
+            groupExpression = "YEAR(created_at)";
+        } else {
+            labelExpression = "DATE(created_at)";
+            rangeClause = "AND created_at >= ? AND created_at < DATE_ADD(?, INTERVAL 1 DAY)";
+            groupExpression = "DATE(created_at)";
+        }
+
+        String sql = "SELECT " + labelExpression + " AS label, COUNT(*) AS paid_orders, "
+                + "COALESCE(SUM(CASE WHEN payment_method = 'COD' THEN total_amount ELSE 0 END), 0) AS cash_revenue, "
+                + "COALESCE(SUM(CASE WHEN payment_method IN ('BANK_TRANSFER', 'MOMO') THEN total_amount ELSE 0 END), 0) AS transfer_revenue, "
+                + "COALESCE(SUM(total_amount), 0) AS total_revenue "
+                + "FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION + " " + rangeClause
+                + " GROUP BY " + groupExpression + " ORDER BY " + groupExpression + " ASC";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            bindEligibleOrderStatuses(stmt, 1);
+            if ("day".equals(view)) {
+                stmt.setString(9, from);
+                stmt.setString(10, to);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    details.add(new RevenueDetail(
+                            rs.getString("label"), rs.getInt("paid_orders"),
+                            rs.getBigDecimal("cash_revenue"), rs.getBigDecimal("transfer_revenue"),
+                            rs.getBigDecimal("total_revenue")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return details;
+    }
+
+    public BigDecimal getPreviousPeriodRevenue(String view) {
+        String sql;
+        if ("month".equals(view)) {
+            sql = "SELECT COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION
+                    + " AND created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 12 MONTH)"
+                    + " AND created_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')";
+        } else if ("year".equals(view)) {
+            sql = "SELECT COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION
+                    + " AND YEAR(created_at) = YEAR(CURDATE()) - 1";
+        } else {
+            sql = "SELECT COALESCE(SUM(total_amount), 0) AS total FROM orders WHERE " + ELIGIBLE_ORDER_CONDITION
+                    + " AND created_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY)"
+                    + " AND created_at < DATE_SUB(CURDATE(), INTERVAL 6 DAY)";
+        }
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            bindEligibleOrderStatuses(stmt, 1);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("total");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
     }
 
     public List<RevenuePoint> getRevenueByDateRange(String from, String to) {
@@ -202,6 +318,25 @@ public class ReportDao {
             }
         }
         return categories;
+    }
+
+    public static class ReportSummary {
+        private final BigDecimal totalRevenue;
+        private final int paidOrders;
+        private final BigDecimal cashRevenue;
+        private final BigDecimal transferRevenue;
+
+        public ReportSummary(BigDecimal totalRevenue, int paidOrders, BigDecimal cashRevenue, BigDecimal transferRevenue) {
+            this.totalRevenue = totalRevenue;
+            this.paidOrders = paidOrders;
+            this.cashRevenue = cashRevenue;
+            this.transferRevenue = transferRevenue;
+        }
+
+        public BigDecimal getTotalRevenue() { return totalRevenue; }
+        public int getPaidOrders() { return paidOrders; }
+        public BigDecimal getCashRevenue() { return cashRevenue; }
+        public BigDecimal getTransferRevenue() { return transferRevenue; }
     }
 
     private void bindEligibleSalesRange(PreparedStatement stmt, Timestamp from, Timestamp toExclusive) throws SQLException {

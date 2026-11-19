@@ -73,9 +73,11 @@ public class StockIssueServlet extends HttpServlet {
             issue.setQuantity(quantity);
             issue.setReason(reason == null || reason.isBlank() ? "Bán hàng" : reason);
             issue.setNote(note == null ? "" : note);
-            stockIssueDao.createIssue(issue);
+            boolean created = stockIssueDao.createIssue(issue);
+            response.sendRedirect(request.getContextPath() + "/stock-out" + (created ? "?success=" + java.net.URLEncoder.encode("Đã xuất kho thành công.", java.nio.charset.StandardCharsets.UTF_8) : "?error=" + java.net.URLEncoder.encode("Không đủ tồn kho để xuất.", java.nio.charset.StandardCharsets.UTF_8)));
+            return;
         }
 
-        response.sendRedirect(request.getContextPath() + "/stock-out");
+        response.sendRedirect(request.getContextPath() + "/stock-out?error=" + java.net.URLEncoder.encode("Sản phẩm hoặc số lượng không hợp lệ.", java.nio.charset.StandardCharsets.UTF_8));
     }
 }

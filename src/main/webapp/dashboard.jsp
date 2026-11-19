@@ -58,7 +58,7 @@
                 <div class="topbar-actions">
                     <button class="icon-button" type="button" aria-label="Thông báo">
                         🔔
-                        <span class="badge-count">10+</span>
+                        <span class="badge-count">${pendingOrdersCount}</span>
                     </button>
                     <div class="user-mini">
                         <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>
@@ -85,7 +85,7 @@
                         <span class="icon-pill">↗</span>
                     </div>
                     <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayRevenue")) %>₫</p>
-                    <span class="trend">▲ 12.4%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-green">
                     <div class="stat-meta">
@@ -93,7 +93,7 @@
                         <span class="icon-pill">✓</span>
                     </div>
                     <p class="value">${totalOrders}</p>
-                    <span class="trend">▲ 8.2%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-orange">
                     <div class="stat-meta">
@@ -101,7 +101,7 @@
                         <span class="icon-pill">◔</span>
                     </div>
                     <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayCashRevenue")) %>₫</p>
-                    <span class="trend">▲ 5.1%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-purple">
                     <div class="stat-meta">
@@ -109,7 +109,7 @@
                         <span class="icon-pill">⬢</span>
                     </div>
                     <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayTransferRevenue")) %>₫</p>
-                    <span class="trend">▲ 9.3%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-blue">
                     <div class="stat-meta">
@@ -270,44 +270,77 @@
                 </div>
             </section>
 
-            <section class="panel chart-panel">
-                <div class="panel-header">
+            <section class="panel revenue-overview-panel" aria-labelledby="revenueOverviewTitle">
+                <div class="panel-header revenue-panel-header">
                     <div>
                         <span class="panel-kicker">Báo cáo</span>
-                        <h3>Biểu đồ doanh thu</h3>
+                        <h3 id="revenueOverviewTitle">Tổng quan doanh thu</h3>
                     </div>
-                    <div class="segmented-control">
-                        <a href="${pageContext.request.contextPath}/reports?view=day" class="segment-button active">Ngày</a>
-                        <a href="${pageContext.request.contextPath}/reports?view=month" class="segment-button">Tháng</a>
-                        <a href="${pageContext.request.contextPath}/reports?view=year" class="segment-button">Năm</a>
+                    <div class="segmented-control" aria-label="Chọn kỳ doanh thu">
+                        <a href="${pageContext.request.contextPath}/dashboard?view=day" class="segment-button <%= "day".equals(request.getAttribute("revenueView")) ? "active" : "" %>">Ngày</a>
+                        <a href="${pageContext.request.contextPath}/dashboard?view=month" class="segment-button <%= "month".equals(request.getAttribute("revenueView")) ? "active" : "" %>">Tháng</a>
+                        <a href="${pageContext.request.contextPath}/dashboard?view=year" class="segment-button <%= "year".equals(request.getAttribute("revenueView")) ? "active" : "" %>">Năm</a>
                     </div>
                 </div>
-                <div class="chart-wrap revenue-chart">
-                    <%
-                        List<RevenuePoint> revenueSeries = (List<RevenuePoint>) request.getAttribute("revenueSeries");
-                        BigDecimal maxRevenue = BigDecimal.ZERO;
-                        if (revenueSeries != null) {
-                            for (RevenuePoint point : revenueSeries) {
-                                if (point.getValue() != null && point.getValue().compareTo(maxRevenue) > 0) {
-                                    maxRevenue = point.getValue();
-                                }
-                            }
-                        }
-                        if (revenueSeries != null && !revenueSeries.isEmpty()) {
-                            for (RevenuePoint point : revenueSeries) {
-                                BigDecimal heightPercent = maxRevenue.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : point.getValue().multiply(BigDecimal.valueOf(100)).divide(maxRevenue, 2, java.math.RoundingMode.HALF_UP);
-                    %>
-                    <div class="bar-col">
-                        <span class="bar-value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(point.getValue()) %>₫</span>
-                        <div class="bar-fill" style="height: <%= heightPercent %>%;"></div>
-                        <span class="day-label"><%= point.getLabel() %></span>
+
+                <div class="revenue-summary">
+                    <div>
+                        <span class="revenue-summary-label">Doanh thu trong kỳ</span>
+                        <strong class="revenue-summary-value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((BigDecimal) request.getAttribute("periodRevenue")) %>₫</strong>
                     </div>
                     <%
+                        BigDecimal previousRevenue = (BigDecimal) request.getAttribute("previousPeriodRevenue");
+                        BigDecimal currentRevenue = (BigDecimal) request.getAttribute("periodRevenue");
+                        String changeClass = "trend-neutral";
+                        String changeText = "Chưa có dữ liệu so sánh";
+                        if (previousRevenue != null && previousRevenue.compareTo(BigDecimal.ZERO) > 0 && currentRevenue != null) {
+                            BigDecimal change = currentRevenue.subtract(previousRevenue)
+                                    .multiply(BigDecimal.valueOf(100))
+                                    .divide(previousRevenue, 1, java.math.RoundingMode.HALF_UP);
+                            if (change.compareTo(BigDecimal.ZERO) > 0) {
+                                changeClass = "trend-up";
+                                changeText = "↑ " + change.toPlainString().replace(".0", "") + "% so với kỳ trước";
+                            } else if (change.compareTo(BigDecimal.ZERO) < 0) {
+                                changeClass = "trend-down";
+                                changeText = "↓ " + change.abs().toPlainString().replace(".0", "") + "% so với kỳ trước";
+                            } else {
+                                changeText = "Không thay đổi so với kỳ trước";
                             }
-                        } else {
+                        }
                     %>
-                    <div class="empty-chart">Chưa có dữ liệu doanh thu trong khoảng thời gian hiện tại.</div>
+                    <span class="revenue-change <%= changeClass %>"><%= changeText %></span>
+                </div>
+
+                <div class="revenue-chart-container">
+                    <%
+                        List<RevenuePoint> revenueSeries = (List<RevenuePoint>) request.getAttribute("revenueSeries");
+                        boolean hasRevenue = revenueSeries != null && revenueSeries.stream().anyMatch(p -> p.getValue() != null && p.getValue().compareTo(BigDecimal.ZERO) > 0);
+                    %>
+                    <% if (hasRevenue) { %>
+                        <canvas id="revenueChart" aria-label="Biểu đồ doanh thu theo thời gian" role="img"></canvas>
+                        <div class="chart-data" id="revenueData">
+                            <c:forEach items="${revenueSeries}" var="point">
+                                <span data-label="<c:out value='${point.label}'/>" data-value="${point.value}"></span>
+                            </c:forEach>
+                        </div>
+                    <% } else { %>
+                        <div class="empty-chart empty-revenue-chart">
+                            <span class="empty-chart-icon">↗</span>
+                            <strong>Chưa có giao dịch trong kỳ</strong>
+                            <small>Doanh thu sẽ hiển thị tại đây khi có đơn thanh toán.</small>
+                        </div>
                     <% } %>
+                </div>
+
+                <div class="revenue-panel-footer">
+                    <c:choose>
+                        <c:when test="<%= canAccessReports %>">
+                            <a class="table-link" href="${pageContext.request.contextPath}/reports?view=<%= request.getAttribute("revenueView") %>">Xem báo cáo chi tiết →</a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="muted">Báo cáo chi tiết chỉ dành cho vai trò được cấp quyền</span>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </section>
 
@@ -427,6 +460,73 @@
         }
         salesPeriod.addEventListener('change', updateSalesDateRange);
         updateSalesDateRange();
+
+        const revenueCanvas = document.getElementById('revenueChart');
+        const revenueDataElement = document.getElementById('revenueData');
+        if (revenueCanvas && revenueDataElement) {
+            const revenueData = readChartData('revenueData');
+            new Chart(revenueCanvas, {
+                type: 'line',
+                data: {
+                    labels: revenueData.map(function (item) { return item.label; }),
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revenueData.map(function (item) { return item.value; }),
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#ffffff',
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                label: function (context) {
+                                    return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' ₫';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '<%= "year".equals(request.getAttribute("revenueView")) ? "Năm" : ("month".equals(request.getAttribute("revenueView")) ? "Tháng" : "Ngày") %>', color: '#64748b' },
+                            grid: { display: false },
+                            ticks: { color: '#64748b', maxRotation: 0 }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Doanh thu (₫)', color: '#64748b' },
+                            grid: { color: 'rgba(148, 163, 184, 0.16)' },
+                            ticks: {
+                                color: '#64748b',
+                                callback: function (value) {
+                                    if (value >= 1000000000) return (value / 1000000000).toFixed(1).replace('.0', '') + ' tỷ';
+                                    if (value >= 1000000) return (value / 1000000).toFixed(1).replace('.0', '') + ' tr';
+                                    if (value >= 1000) return (value / 1000).toFixed(1).replace('.0', '') + 'k';
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         const chartColors = ['#2563eb', '#f97316', '#16a34a', '#dc2626', '#0d9488', '#ca8a04', '#64748b'];
         function readChartData(elementId) {

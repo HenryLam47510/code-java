@@ -80,6 +80,10 @@ public class DatabaseInitializer {
                 stmt.executeUpdate("ALTER TABLE orders ADD COLUMN cancel_reason VARCHAR(255)");
             } catch (Exception ignored) {
             }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN stock_deducted BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS order_items (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -162,8 +166,19 @@ public class DatabaseInitializer {
                     "role VARCHAR(50), " +
                     "position VARCHAR(100), " +
                     "phone VARCHAR(20), " +
+                    "is_active BOOLEAN DEFAULT TRUE, " +
+                    "deleted_reason VARCHAR(255), " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
             );
+
+            try {
+                stmt.executeUpdate("ALTER TABLE employees ADD COLUMN is_active BOOLEAN DEFAULT TRUE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE employees ADD COLUMN deleted_reason VARCHAR(255)");
+            } catch (Exception ignored) {
+            }
 
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS employee_permissions (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +

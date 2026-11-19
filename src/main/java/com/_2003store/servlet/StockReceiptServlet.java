@@ -79,9 +79,11 @@ public class StockReceiptServlet extends HttpServlet {
             receipt.setUnitPrice(unitPrice);
             receipt.setTotalCost(unitPrice.multiply(BigDecimal.valueOf(quantity)));
             receipt.setNote(note == null ? "" : note);
-            stockReceiptDao.createReceipt(receipt);
+            boolean created = stockReceiptDao.createReceipt(receipt);
+            response.sendRedirect(request.getContextPath() + "/stock" + (created ? "?success=" + java.net.URLEncoder.encode("Đã nhập kho thành công.", java.nio.charset.StandardCharsets.UTF_8) : "?error=" + java.net.URLEncoder.encode("Không thể nhập kho. Kiểm tra sản phẩm và số lượng.", java.nio.charset.StandardCharsets.UTF_8)));
+            return;
         }
 
-        response.sendRedirect(request.getContextPath() + "/stock");
+        response.sendRedirect(request.getContextPath() + "/stock?error=" + java.net.URLEncoder.encode("Sản phẩm không tồn tại.", java.nio.charset.StandardCharsets.UTF_8));
     }
 }

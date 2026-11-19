@@ -42,7 +42,6 @@
                 <div class="topbar-actions">
                     <button class="icon-button" type="button" aria-label="Thông báo">
                         🔔
-                        <span class="badge-count">3</span>
                     </button>
                     <div class="user-mini">
                         <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>
@@ -61,7 +60,7 @@
                         <span class="icon-pill">◫</span>
                     </div>
                     <p class="value">${totalProducts}</p>
-                    <span class="trend">▲ 8.2%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-green">
                     <div class="stat-meta">
@@ -69,7 +68,7 @@
                         <span class="icon-pill">✓</span>
                     </div>
                     <p class="value">${totalStock}</p>
-                    <span class="trend">▲ 3.6%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
                 <article class="stat-card accent-orange">
                     <div class="stat-meta">
@@ -85,7 +84,7 @@
                         <span class="icon-pill">↗</span>
                     </div>
                     <p class="value"><%= request.getAttribute("totalRevenue") != null ? request.getAttribute("totalRevenue") : "0" %>₫</p>
-                    <span class="trend">▲ 11.1%</span>
+                    <span class="trend">Dữ liệu thực tế</span>
                 </article>
             </section>
 

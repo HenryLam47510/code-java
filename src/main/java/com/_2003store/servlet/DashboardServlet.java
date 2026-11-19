@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.math.BigDecimal;
 
 @WebServlet({"/dashboard", "/dashboard/admin", "/dashboard/manager", "/dashboard/employee"})
 public class DashboardServlet extends HttpServlet {
@@ -67,7 +68,25 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("todayTransferRevenue", statsService.getTodayTransferRevenue());
         request.setAttribute("todayCashAndTransferRevenue", statsService.getTodayCashAndTransferRevenue());
         request.setAttribute("thisMonthRevenue", statsService.getThisMonthRevenue());
-        request.setAttribute("revenueSeries", reportDao.getRevenueSeries("day"));
+
+        String revenueView = request.getParameter("view");
+        if (!"month".equals(revenueView) && !"year".equals(revenueView)) {
+            revenueView = "day";
+        }
+        List<com._2003store.model.RevenuePoint> revenueSeries = reportDao.getRevenueSeries(revenueView);
+        BigDecimal periodRevenue = BigDecimal.ZERO;
+        if (revenueSeries != null) {
+            for (com._2003store.model.RevenuePoint point : revenueSeries) {
+                if (point.getValue() != null) {
+                    periodRevenue = periodRevenue.add(point.getValue());
+                }
+            }
+        }
+        BigDecimal previousPeriodRevenue = reportDao.getPreviousPeriodRevenue(revenueView);
+        request.setAttribute("revenueSeries", revenueSeries);
+        request.setAttribute("revenueView", revenueView);
+        request.setAttribute("periodRevenue", periodRevenue);
+        request.setAttribute("previousPeriodRevenue", previousPeriodRevenue);
         request.setAttribute("recentOrders", statsService.getRecentOrders());
         request.setAttribute("notifications", new OrderDao().getOrderNotifications());
 

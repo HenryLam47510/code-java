@@ -1,4 +1,5 @@
 com\_2003store\dao\ReportDao.class
+com\_2003store\dao\ReportDao$ReportSummary.class
 com\_2003store\model\Order.class
 com\_2003store\dao\OrderDao.class
 com\_2003store\model\StockReceipt.class
@@ -20,6 +21,7 @@ com\_2003store\dao\ProductDao.class
 com\_2003store\servlet\InventoryCheckServlet.class
 com\_2003store\model\InventoryCheck.class
 com\_2003store\service\OrderCodeGenerator.class
+com\_2003store\model\RevenueDetail.class
 com\_2003store\servlet\ReportServlet.class
 com\_2003store\model\StockIssue.class
 com\_2003store\service\PaymentConfig.class

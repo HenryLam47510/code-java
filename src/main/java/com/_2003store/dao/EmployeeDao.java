@@ -45,10 +45,11 @@ public class EmployeeDao {
     }
 
     public void deleteEmployee(int id) {
-        String sql = "DELETE FROM employees WHERE id = ?";
+        String sql = "UPDATE employees SET is_active = false, deleted_reason = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+            stmt.setString(1, "Vô hiệu hóa tài khoản");
+            stmt.setInt(2, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -81,7 +82,7 @@ public class EmployeeDao {
     }
 
     public Employee getEmployeeByUsername(String username) {
-        String sql = "SELECT * FROM employees WHERE username = ?";
+        String sql = "SELECT * FROM employees WHERE username = ? AND (is_active IS NULL OR is_active = true)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
@@ -166,7 +167,7 @@ public class EmployeeDao {
 
     public List<Employee> getAllEmployees() {
         List<Employee> employees = new ArrayList<>();
-        String sql = "SELECT * FROM employees ORDER BY id ASC";
+        String sql = "SELECT * FROM employees WHERE is_active IS NULL OR is_active = true ORDER BY id ASC";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {

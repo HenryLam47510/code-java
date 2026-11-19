@@ -13,26 +13,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StockReceiptDao {
-    public void createReceipt(StockReceipt receipt) {
-        String sql = "INSERT INTO stock_receipts (product_id, product_name, supplier, quantity, unit_price, total_cost, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, receipt.getProductId());
-            stmt.setString(2, receipt.getProductName());
-            stmt.setString(3, receipt.getSupplier());
-            stmt.setInt(4, receipt.getQuantity());
-            stmt.setBigDecimal(5, receipt.getUnitPrice());
-            stmt.setBigDecimal(6, receipt.getTotalCost());
-            stmt.setString(7, receipt.getNote());
-            stmt.executeUpdate();
+    public boolean createReceipt(StockReceipt receipt) {
+        if (receipt == null || receipt.getQuantity() <= 0 || receipt.getProductId() <= 0) {
+            return false;
+        }
+        String insertSql = "INSERT INTO stock_receipts (product_id, product_name, supplier, quantity, unit_price, total_cost, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String stockSql = "UPDATE products SET stock = stock + ? WHERE id = ? AND (is_deleted IS NULL OR is_deleted = false)";
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                 PreparedStatement stockStmt = conn.prepareStatement(stockSql)) {
+                insertStmt.setInt(1, receipt.getProductId());
+                insertStmt.setString(2, receipt.getProductName());
+                insertStmt.setString(3, receipt.getSupplier());
+                insertStmt.setInt(4, receipt.getQuantity());
+                insertStmt.setBigDecimal(5, receipt.getUnitPrice());
+                insertStmt.setBigDecimal(6, receipt.getTotalCost());
+                insertStmt.setString(7, receipt.getNote());
+                insertStmt.executeUpdate();
 
-            Product product = new ProductDao().getProductById(receipt.getProductId());
-            if (product != null) {
-                product.setStock(product.getStock() + receipt.getQuantity());
-                new ProductDao().updateProduct(product);
+                stockStmt.setInt(1, receipt.getQuantity());
+                stockStmt.setInt(2, receipt.getProductId());
+                if (stockStmt.executeUpdate() != 1) {
+                    conn.rollback();
+                    return false;
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

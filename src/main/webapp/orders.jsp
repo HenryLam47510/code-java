@@ -47,7 +47,7 @@
                 <div class="topbar-actions">
                     <button class="icon-button" type="button" aria-label="Thông báo">
                         🔔
-                        <span class="badge-count">5</span>
+                        <span class="badge-count">${pendingOrdersCount}</span>
                     </button>
                     <div class="user-mini">
                         <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>
@@ -66,7 +66,7 @@
                         <span class="icon-pill">↗</span>
                     </div>
                     <p class="value"><%= request.getAttribute("totalRevenue") != null ? request.getAttribute("totalRevenue") : "0" %>₫</p>
-                    <span class="trend">▲ 9.6%</span>
+                    <span class="trend">Tổng theo database</span>
                 </article>
                 <article class="stat-card accent-green">
                     <div class="stat-meta">
@@ -74,7 +74,7 @@
                         <span class="icon-pill">✓</span>
                     </div>
                     <p class="value">${totalOrders}</p>
-                    <span class="trend">▲ 5.8%</span>
+                    <span class="trend">Đơn đã thanh toán</span>
                 </article>
                 <article class="stat-card accent-orange">
                     <div class="stat-meta">
@@ -82,7 +82,7 @@
                         <span class="icon-pill">⏳</span>
                     </div>
                     <p class="value">${pendingOrdersCount}</p>
-                    <span class="trend">▼ 2.1%</span>
+                    <span class="trend">Đơn chưa hoàn tất</span>
                 </article>
                 <article class="stat-card accent-purple">
                     <div class="stat-meta">
@@ -90,7 +90,7 @@
                         <span class="icon-pill">◔</span>
                     </div>
                     <p class="value"><%= request.getAttribute("todayRevenue") != null ? request.getAttribute("todayRevenue") : "0" %>₫</p>
-                    <span class="trend">▲ 4.7%</span>
+                    <span class="trend">Doanh thu hôm nay</span>
                 </article>
             </section>
 
@@ -258,9 +258,13 @@
                         <% if ("BANK_TRANSFER".equalsIgnoreCase(selectedOrder.getPaymentMethod())) { %>
                         <div class="qr-box">
                             <span>QR thanh toán VietQR</span>
-                            <div class="qr-placeholder qr-clickable" data-qr-src="<%= selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank() ? selectedOrder.getQrCode() : "https://img.vietqr.io/image/MB-050117052004-compact2.png?amount=0&addInfo=Thanh+toan+don+test" %>" onclick="openQrModal(this.dataset.qrSrc)" tabindex="0" role="button" aria-label="Phóng to mã QR thanh toán">
-                                <img class="qr-image" src="<%= selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank() ? selectedOrder.getQrCode() : "https://img.vietqr.io/image/MB-050117052004-compact2.png?amount=0&addInfo=Thanh+toan+don+test" %>" alt="VietQR" />
+                            <% if (selectedOrder.getQrCode() != null && !selectedOrder.getQrCode().isBlank()) { %>
+                            <div class="qr-placeholder qr-clickable" data-qr-src="<%= selectedOrder.getQrCode() %>" onclick="openQrModal(this.dataset.qrSrc)" tabindex="0" role="button" aria-label="Phóng to mã QR thanh toán">
+                                <img class="qr-image" src="<%= selectedOrder.getQrCode() %>" alt="VietQR" />
                             </div>
+                            <% } else { %>
+                            <div class="payment-status-box">Chưa thể tạo QR vì chưa có cấu hình tài khoản nhận tiền.</div>
+                            <% } %>
                             <small>Ngân hàng: MB - 050117052004</small>
                             <small>Người nhận: Hoang Manh Dung</small>
                             <small>Ghi chú: <%= selectedOrder.getTransactionNote() != null && !selectedOrder.getTransactionNote().isBlank() ? selectedOrder.getTransactionNote() : "Thanh toan don " + (selectedOrder.getOrderCode() != null ? selectedOrder.getOrderCode() : "#" + selectedOrder.getId()) %></small>
@@ -269,7 +273,11 @@
                         <textarea name="transactionNote" placeholder="Ghi chú xác nhận thanh toán"><%= selectedOrder.getTransactionNote() != null ? selectedOrder.getTransactionNote() : "" %></textarea>
                         <div class="detail-actions">
                             <button type="submit" name="action" value="cancel-order" class="btn btn-danger">Hủy đơn</button>
-                            <button type="submit" name="action" value="confirm-payment" class="btn btn-primary">Xác nhận</button>
+                            <% if (!"BANK_TRANSFER".equalsIgnoreCase(selectedOrder.getPaymentMethod())) { %>
+                            <button type="submit" name="action" value="confirm-payment" class="btn btn-primary">Xác nhận đã nhận tiền mặt</button>
+                            <% } else { %>
+                            <small>Chuyển khoản chỉ được xác nhận sau khi đối chiếu giao dịch thực tế qua API ngân hàng.</small>
+                            <% } %>
                             <a class="btn btn-secondary" href="${pageContext.request.contextPath}/orders">Quay lại</a>
                         </div>
                     </form>

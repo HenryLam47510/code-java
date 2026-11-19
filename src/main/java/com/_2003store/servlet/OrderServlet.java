@@ -8,6 +8,7 @@ import com._2003store.model.Product;
 import com._2003store.model.User;
 import com._2003store.service.AuthService;
 import com._2003store.service.OrderStatus;
+import com._2003store.service.VietQrService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -47,6 +48,9 @@ public class OrderServlet extends HttpServlet {
         request.setAttribute("orders", orders);
         request.setAttribute("pendingOrders", pendingOrders);
         request.setAttribute("notifications", orderDao.getOrderNotifications());
+        request.setAttribute("pendingOrdersCount", orderDao.getPendingOrdersCount());
+        request.setAttribute("totalRevenue", orderDao.getTotalRevenue());
+        request.setAttribute("totalOrders", orderDao.getTotalOrders());
         request.setAttribute("availableProducts", availableProducts);
 
         List<OrderItem> items = new ArrayList<>();
@@ -100,20 +104,25 @@ public class OrderServlet extends HttpServlet {
             try {
                 int orderId = Integer.parseInt(orderIdParam);
                 String paymentMethod = request.getParameter("paymentMethod");
-                String paymentStatus = request.getParameter("paymentStatus");
                 String transactionNote = request.getParameter("transactionNote");
                 if ("cancel-order".equals(action)) {
                     String cancelReason = request.getParameter("cancelReason");
-                    orderDao.updateOrderStatus(orderId, OrderStatus.CANCELLED, paymentMethod, "DA_HUY", transactionNote, cancelReason);
-                    orderDao.hideOrder(orderId, cancelReason);
-                    response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + "&success=" + URLEncoder.encode("Đơn hàng đã được hủy.", StandardCharsets.UTF_8));
+                    if (cancelReason == null || cancelReason.isBlank()) {
+                        response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + "&error=" + URLEncoder.encode("Vui lòng nhập lý do hủy đơn.", StandardCharsets.UTF_8));
+                        return;
+                    }
+                    boolean cancelled = orderDao.cancelOrder(orderId, cancelReason);
+                    response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + (cancelled ? "&success=" : "&error=") + URLEncoder.encode(cancelled ? "Đơn hàng đã được hủy." : "Không thể hủy đơn hàng.", StandardCharsets.UTF_8));
                     return;
                 }
-                String resolvedPaymentMethod = paymentMethod == null || paymentMethod.isBlank() ? "COD" : paymentMethod;
-                String resolvedStatus = "BANK_TRANSFER".equalsIgnoreCase(resolvedPaymentMethod) ? OrderStatus.PAID : OrderStatus.COMPLETED;
-                String resolvedPayment = paymentStatus == null || paymentStatus.isBlank() ? "DA_THANH_TOAN" : paymentStatus;
-                orderDao.updateOrderStatus(orderId, resolvedStatus, resolvedPaymentMethod, resolvedPayment, transactionNote, null);
-                response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + "&success=" + URLEncoder.encode("Đơn hàng đã được xác nhận thanh toán.", StandardCharsets.UTF_8));
+
+                if ("BANK_TRANSFER".equalsIgnoreCase(paymentMethod)) {
+                    response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + "&error=" + URLEncoder.encode("Chuyển khoản chưa được xác thực qua API ngân hàng. Đơn vẫn đang chờ thanh toán.", StandardCharsets.UTF_8));
+                    return;
+                }
+
+                boolean confirmed = orderDao.confirmCashPayment(orderId, transactionNote);
+                response.sendRedirect(request.getContextPath() + "/orders?detailId=" + orderId + (confirmed ? "&success=" : "&error=") + URLEncoder.encode(confirmed ? "Đơn hàng đã được xác nhận thanh toán." : "Không thể thanh toán: đơn đã thanh toán hoặc tồn kho không đủ.", StandardCharsets.UTF_8));
                 return;
             } catch (NumberFormatException e) {
                 response.sendRedirect(request.getContextPath() + "/orders?error=" + URLEncoder.encode("Mã đơn hàng không hợp lệ.", StandardCharsets.UTF_8));
@@ -191,6 +200,9 @@ public class OrderServlet extends HttpServlet {
         order.setPaymentStatus("CHUA_THANH_TOAN");
         order.setTransactionNote(transactionNote);
         order.setTotalAmount(total);
+        if ("BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod())) {
+            order.setQrCode(VietQrService.generateQrUrl(total, ""));
+        }
 
         orderDao.createOrder(order, items);
         response.sendRedirect(request.getContextPath() + "/orders");

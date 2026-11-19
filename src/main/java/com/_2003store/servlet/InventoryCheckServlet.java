@@ -66,6 +66,11 @@ public class InventoryCheckServlet extends HttpServlet {
         int countedQuantity = Integer.parseInt(countedParam);
         Product product = productDao.getProductById(productId);
 
+        if (countedQuantity < 0) {
+            response.sendRedirect(request.getContextPath() + "/inventory-check?error=" + java.net.URLEncoder.encode("Số lượng kiểm kho không được âm.", java.nio.charset.StandardCharsets.UTF_8));
+            return;
+        }
+
         if (product != null) {
             InventoryCheck check = new InventoryCheck();
             check.setProductId(productId);
@@ -75,7 +80,9 @@ public class InventoryCheckServlet extends HttpServlet {
             check.setVariance(countedQuantity - product.getStock());
             check.setCountedBy(countedBy == null || countedBy.isBlank() ? "Nhân viên" : countedBy);
             check.setNote(note == null ? "" : note);
-            inventoryCheckDao.saveCheck(check);
+            boolean saved = inventoryCheckDao.saveCheck(check);
+            response.sendRedirect(request.getContextPath() + "/inventory-check" + (saved ? "?success=" + java.net.URLEncoder.encode("Đã lưu kết quả kiểm kho.", java.nio.charset.StandardCharsets.UTF_8) : "?error=" + java.net.URLEncoder.encode("Không thể lưu kiểm kho.", java.nio.charset.StandardCharsets.UTF_8)));
+            return;
         }
 
         response.sendRedirect(request.getContextPath() + "/inventory-check");

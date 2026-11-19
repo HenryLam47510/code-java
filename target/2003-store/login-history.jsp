@@ -32,7 +32,6 @@
                 <div class="topbar-actions">
                     <button class="icon-button" type="button" aria-label="Thông báo">
                         🔔
-                        <span class="badge-count">2</span>
                     </button>
                     <div class="user-mini">
                         <div class="avatar">${sessionScope.user.fullName.substring(0,1)}</div>

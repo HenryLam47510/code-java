@@ -7,6 +7,7 @@ import com._2003store.model.OrderNotification;
 import com._2003store.service.OrderStatus;
 
 import com._2003store.service.OrderCodeGenerator;
+import com._2003store.service.VietQrService;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -16,12 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDao {
-    private final List<Order> fallbackOrders = new ArrayList<>();
-
     public OrderDao() {
-        fallbackOrders.add(new Order(1001, "Nguyen Van A", "0901234567", OrderStatus.COMPLETED, new BigDecimal("5499000"), Timestamp.valueOf("2026-09-10 10:15:00")));
-        fallbackOrders.add(new Order(1002, "Tran Thi B", "0912345678", OrderStatus.IN_TRANSIT, new BigDecimal("3999000"), Timestamp.valueOf("2026-09-09 16:20:00")));
-        fallbackOrders.add(new Order(1003, "Le Van C", "0987654321", OrderStatus.PENDING_CONFIRMATION, new BigDecimal("7990000"), Timestamp.valueOf("2026-09-08 09:00:00")));
     }
 
     public List<Order> getRecentOrders() {
@@ -35,7 +31,8 @@ public class OrderDao {
             }
             return orders;
         } catch (SQLException e) {
-            return fallbackOrders;
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
@@ -119,7 +116,8 @@ public class OrderDao {
                 }
             }
         } catch (SQLException e) {
-            return fallbackOrders;
+            e.printStackTrace();
+            return new ArrayList<>();
         }
         return orders;
     }
@@ -170,13 +168,8 @@ public class OrderDao {
                 }
             }
         } catch (SQLException e) {
-            BigDecimal total = BigDecimal.ZERO;
-            for (Order order : fallbackOrders) {
-                if (OrderStatus.isRevenueEligible(order.getStatus())) {
-                    total = total.add(order.getTotalAmount());
-                }
-            }
-            return total;
+            e.printStackTrace();
+            return BigDecimal.ZERO;
         }
         return BigDecimal.ZERO;
     }
@@ -193,13 +186,8 @@ public class OrderDao {
                 }
             }
         } catch (SQLException e) {
-            int count = 0;
-            for (Order order : fallbackOrders) {
-                if (OrderStatus.isRevenueEligible(order.getStatus())) {
-                    count++;
-                }
-            }
-            return count;
+            e.printStackTrace();
+            return 0;
         }
         return 0;
     }
@@ -256,7 +244,11 @@ public class OrderDao {
                 stmt.setString(4, order.getPaymentMethod());
                 stmt.setString(5, order.getPaymentStatus() == null ? "CHUA_THANH_TOAN" : order.getPaymentStatus());
                 stmt.setString(6, order.getTransactionNote());
-                stmt.setString(7, order.getQrCode());
+                String qrCode = order.getQrCode();
+                if ("BANK_TRANSFER".equalsIgnoreCase(order.getPaymentMethod()) && (qrCode == null || qrCode.isBlank())) {
+                    qrCode = VietQrService.generateQrUrl(order.getTotalAmount(), orderCode);
+                }
+                stmt.setString(7, qrCode);
                 stmt.setBigDecimal(8, order.getTotalAmount());
                 stmt.setString(9, orderCode);
                 stmt.executeUpdate();
@@ -309,6 +301,114 @@ public class OrderDao {
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public boolean confirmCashPayment(int orderId, String transactionNote) {
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                String lockOrderSql = "SELECT status, payment_status, COALESCE(stock_deducted,false) stock_deducted FROM orders WHERE id = ? FOR UPDATE";
+                try (PreparedStatement lockStmt = conn.prepareStatement(lockOrderSql)) {
+                    lockStmt.setInt(1, orderId);
+                    try (ResultSet rs = lockStmt.executeQuery()) {
+                        if (!rs.next()) {
+                            conn.rollback();
+                            return false;
+                        }
+                        if (rs.getBoolean("stock_deducted") || OrderStatus.isPaidStatus(rs.getString("status"))) {
+                            conn.rollback();
+                            return false;
+                        }
+                    }
+                }
+
+                String itemsSql = "SELECT product_id, quantity FROM order_items WHERE order_id = ?";
+                try (PreparedStatement itemsStmt = conn.prepareStatement(itemsSql)) {
+                    itemsStmt.setInt(1, orderId);
+                    try (ResultSet rs = itemsStmt.executeQuery()) {
+                        while (rs.next()) {
+                            int productId = rs.getInt("product_id");
+                            int quantity = rs.getInt("quantity");
+                            try (PreparedStatement stockStmt = conn.prepareStatement("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ? AND (is_deleted IS NULL OR is_deleted = false)")) {
+                                stockStmt.setInt(1, quantity);
+                                stockStmt.setInt(2, productId);
+                                stockStmt.setInt(3, quantity);
+                                if (stockStmt.executeUpdate() != 1) {
+                                    conn.rollback();
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_method = 'COD', payment_status = 'DA_THANH_TOAN', transaction_note = ?, stock_deducted = true WHERE id = ?")) {
+                    updateStmt.setString(1, OrderStatus.COMPLETED);
+                    updateStmt.setString(2, transactionNote);
+                    updateStmt.setInt(3, orderId);
+                    updateStmt.executeUpdate();
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean cancelOrder(int orderId, String reason) {
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                boolean restoreStock = false;
+                try (PreparedStatement lockStmt = conn.prepareStatement("SELECT COALESCE(stock_deducted,false) FROM orders WHERE id = ? FOR UPDATE")) {
+                    lockStmt.setInt(1, orderId);
+                    try (ResultSet rs = lockStmt.executeQuery()) {
+                        if (!rs.next()) {
+                            conn.rollback();
+                            return false;
+                        }
+                        restoreStock = rs.getBoolean(1);
+                    }
+                }
+
+                if (restoreStock) {
+                    try (PreparedStatement itemsStmt = conn.prepareStatement("SELECT product_id, quantity FROM order_items WHERE order_id = ?")) {
+                        itemsStmt.setInt(1, orderId);
+                        try (ResultSet rs = itemsStmt.executeQuery()) {
+                            while (rs.next()) {
+                                try (PreparedStatement stockStmt = conn.prepareStatement("UPDATE products SET stock = stock + ? WHERE id = ?")) {
+                                    stockStmt.setInt(1, rs.getInt("quantity"));
+                                    stockStmt.setInt(2, rs.getInt("product_id"));
+                                    stockStmt.executeUpdate();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_status = 'DA_HUY', cancel_reason = ?, is_hidden = true, stock_deducted = false WHERE id = ?")) {
+                    updateStmt.setString(1, OrderStatus.CANCELLED);
+                    updateStmt.setString(2, reason);
+                    updateStmt.setInt(3, orderId);
+                    updateStmt.executeUpdate();
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

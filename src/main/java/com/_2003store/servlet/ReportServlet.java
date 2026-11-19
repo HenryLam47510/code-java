@@ -51,6 +51,9 @@ public class ReportServlet extends HttpServlet {
             request.setAttribute("revenueSeries", reportDao.getRevenueSeries(view));
         }
 
+        ReportDao.ReportSummary reportSummary = reportDao.getReportSummary(from, to, view);
+        request.setAttribute("reportSummary", reportSummary);
+        request.setAttribute("revenueDetails", reportDao.getRevenueDetails(from, to, view));
         request.setAttribute("from", from);
         request.setAttribute("to", to);
         request.setAttribute("selectedView", view);

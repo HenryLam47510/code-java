@@ -34,6 +34,10 @@ public class ProductServlet extends HttpServlet {
         }
 
         String path = request.getServletPath();
+        if ("/products/delete".equals(path) && !authService.canWriteModule(user, "products")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Nhân viên không được xóa sản phẩm.");
+            return;
+        }
         if ("/products/delete".equals(path)) {
             int id = Integer.parseInt(request.getParameter("id"));
             productDao.softDeleteProduct(id, "Xóa khỏi danh sách sản phẩm");
@@ -55,7 +59,8 @@ public class ProductServlet extends HttpServlet {
         }
 
         int pageSize = 5;
-        List<Product> allProducts = "STAFF".equalsIgnoreCase(user.getRole()) ? productDao.getVisibleProducts() : productDao.getAllProducts();
+        boolean employeeRole = authService.isEmployee(user);
+        List<Product> allProducts = employeeRole ? productDao.getVisibleProducts() : productDao.getAllProducts();
         List<Product> filteredProducts = new ArrayList<>();
 
         for (Product product : allProducts) {
@@ -97,8 +102,8 @@ public class ProductServlet extends HttpServlet {
             return;
         }
 
-        if (!authService.hasAccess(user, "products")) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền sửa sản phẩm.");
+        if (!authService.hasAccess(user, "products") || !authService.canWriteModule(user, "products")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền thay đổi sản phẩm.");
             return;
         }
 

@@ -1,6 +1,7 @@
 package com._2003store.service;
 
 import com._2003store.dao.EmployeeDao;
+import com._2003store.model.Employee;
 import com._2003store.model.User;
 
 import java.util.HashMap;
@@ -60,9 +61,18 @@ public class AuthService {
     }
 
     public User login(String username, String password) {
-        User user = USERS.get(username);
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
+        if (username == null || password == null) {
+            return null;
+        }
+
+        Employee employee = employeeDao.getEmployeeByUsername(username);
+        if (employee != null && password.equals(employee.getPassword())) {
+            return new User(employee.getUsername(), employee.getPassword(), employee.getFullName(), normalizeRole(employee.getRole()));
+        }
+
+        User demoUser = USERS.get(username);
+        if (demoUser != null && demoUser.getPassword().equals(password)) {
+            return demoUser;
         }
         return null;
     }
@@ -81,7 +91,7 @@ public class AuthService {
 
         if ("MANAGER".equals(role)) {
             boolean defaultAccess = switch (normalizedModule) {
-                case "dashboard", "products", "orders", "customers", "stock", "stock-out", "reports", "staff-report", "inventory-report", "suppliers", "inventory-check", "warehouse-detail", "employees", "login-history", "sales", "payment", "payment_confirm" -> true;
+                case "dashboard", "products", "orders", "customers", "stock", "stock_out", "stock-out", "reports", "staff_report", "staff-report", "inventory_report", "inventory-report", "suppliers", "inventory_check", "inventory-check", "warehouse_detail", "warehouse-detail", "employees", "login_history", "login-history", "sales", "payment", "payment_confirm" -> true;
                 default -> false;
             };
             if (defaultAccess) {
@@ -134,7 +144,7 @@ public class AuthService {
         }
         if ("EMPLOYEE".equals(role)) {
             return switch (normalizedModule) {
-                case "orders", "customers", "products", "payment_confirm" -> true;
+                case "orders", "customers", "payment_confirm" -> true;
                 default -> false;
             };
         }

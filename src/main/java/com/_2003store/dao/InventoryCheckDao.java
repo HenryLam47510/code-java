@@ -12,26 +12,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryCheckDao {
-    public void saveCheck(InventoryCheck check) {
+    public boolean saveCheck(InventoryCheck check) {
+        if (check == null || check.getCountedQuantity() < 0) {
+            return false;
+        }
         String sql = "INSERT INTO inventory_counts (product_id, product_name, expected_quantity, counted_quantity, variance, counted_by, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, check.getProductId());
-            stmt.setString(2, check.getProductName());
-            stmt.setInt(3, check.getExpectedQuantity());
-            stmt.setInt(4, check.getCountedQuantity());
-            stmt.setInt(5, check.getVariance());
-            stmt.setString(6, check.getCountedBy());
-            stmt.setString(7, check.getNote());
-            stmt.executeUpdate();
+        String stockSql = "UPDATE products SET stock = ? WHERE id = ? AND (is_deleted IS NULL OR is_deleted = false)";
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 PreparedStatement stockStmt = conn.prepareStatement(stockSql)) {
+                stmt.setInt(1, check.getProductId());
+                stmt.setString(2, check.getProductName());
+                stmt.setInt(3, check.getExpectedQuantity());
+                stmt.setInt(4, check.getCountedQuantity());
+                stmt.setInt(5, check.getVariance());
+                stmt.setString(6, check.getCountedBy());
+                stmt.setString(7, check.getNote());
+                stmt.executeUpdate();
 
-            Product product = new ProductDao().getProductById(check.getProductId());
-            if (product != null) {
-                product.setStock(check.getCountedQuantity());
-                new ProductDao().updateProduct(product);
+                stockStmt.setInt(1, check.getCountedQuantity());
+                stockStmt.setInt(2, check.getProductId());
+                if (stockStmt.executeUpdate() != 1) {
+                    conn.rollback();
+                    return false;
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
