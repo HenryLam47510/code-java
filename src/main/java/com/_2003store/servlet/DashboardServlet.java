@@ -63,10 +63,8 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("averageOrderValue", statsService.getAverageOrderValue());
         request.setAttribute("totalRevenue", statsService.getTotalRevenue());
         request.setAttribute("totalOrders", statsService.getTotalOrders());
-        request.setAttribute("todayRevenue", statsService.getTodayRevenue());
-        request.setAttribute("todayCashRevenue", statsService.getTodayCashRevenue());
-        request.setAttribute("todayTransferRevenue", statsService.getTodayTransferRevenue());
-        request.setAttribute("todayCashAndTransferRevenue", statsService.getTodayCashAndTransferRevenue());
+        com._2003store.model.RevenueSummary todayRevenue = statsService.getTodayRevenueSummary();
+        request.setAttribute("todayRevenue", todayRevenue);
         request.setAttribute("thisMonthRevenue", statsService.getThisMonthRevenue());
 
         String revenueView = request.getParameter("view");

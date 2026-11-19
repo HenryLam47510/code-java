@@ -45,6 +45,7 @@ public class DatabaseInitializer {
                     "total_amount DECIMAL(12,0), " +
                     "is_hidden BOOLEAN DEFAULT FALSE, " +
                     "cancel_reason VARCHAR(255), " +
+                    "confirmed_at TIMESTAMP NULL, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
             );
 
@@ -82,6 +83,14 @@ public class DatabaseInitializer {
             }
             try {
                 stmt.executeUpdate("ALTER TABLE orders ADD COLUMN stock_deducted BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("ALTER TABLE orders ADD COLUMN confirmed_at TIMESTAMP NULL");
+            } catch (Exception ignored) {
+            }
+            try {
+                stmt.executeUpdate("UPDATE orders SET confirmed_at = created_at WHERE confirmed_at IS NULL AND (status IN ('Da thanh toan', 'Hoan thanh', 'paid', 'completed') OR payment_status IN ('DA_THANH_TOAN', 'paid', 'completed', 'Thanh toan thanh cong'))");
             } catch (Exception ignored) {
             }
 

@@ -18,7 +18,7 @@ public class CategoryStat {
         return productCount;
     }
 
-    public double getPercentage() {
+    public double getPercentage() {s
         return percentage;
     }
 

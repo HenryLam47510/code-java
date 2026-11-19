@@ -343,14 +343,16 @@ public class OrderDao {
     }
 
     public void updatePaymentStatus(int orderId, String paymentMethod, String paymentStatus, String transactionNote, String qrCode) {
-        String sql = "UPDATE orders SET payment_method = ?, payment_status = ?, transaction_note = ?, qr_code = ? WHERE id = ?";
+        String sql = "UPDATE orders SET payment_method = ?, payment_status = ?, transaction_note = ?, qr_code = ?, confirmed_at = CASE WHEN ? IN ('DA_THANH_TOAN', 'paid', 'completed', 'Thanh toan thanh cong') THEN COALESCE(confirmed_at, CURRENT_TIMESTAMP) ELSE NULL END WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String effectivePaymentStatus = paymentStatus == null || paymentStatus.isBlank() ? "DA_THANH_TOAN" : paymentStatus;
             stmt.setString(1, paymentMethod);
-            stmt.setString(2, paymentStatus == null || paymentStatus.isBlank() ? "DA_THANH_TOAN" : paymentStatus);
+            stmt.setString(2, effectivePaymentStatus);
             stmt.setString(3, transactionNote);
             stmt.setString(4, qrCode);
-            stmt.setInt(5, orderId);
+            stmt.setString(5, effectivePaymentStatus);
+            stmt.setInt(6, orderId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -412,7 +414,7 @@ public class OrderDao {
                     }
                 }
 
-                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_method = 'COD', payment_status = 'DA_THANH_TOAN', transaction_note = ?, stock_deducted = true WHERE id = ?")) {
+                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_method = 'COD', payment_status = 'DA_THANH_TOAN', transaction_note = ?, stock_deducted = true, confirmed_at = COALESCE(confirmed_at, CURRENT_TIMESTAMP) WHERE id = ?")) {
                     updateStmt.setString(1, OrderStatus.COMPLETED);
                     updateStmt.setString(2, transactionNote);
                     updateStmt.setInt(3, orderId);
@@ -462,7 +464,7 @@ public class OrderDao {
                     }
                 }
 
-                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_status = 'DA_HUY', cancel_reason = ?, is_hidden = true, stock_deducted = false WHERE id = ?")) {
+                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE orders SET status = ?, payment_status = 'DA_HUY', cancel_reason = ?, is_hidden = true, stock_deducted = false, confirmed_at = NULL WHERE id = ?")) {
                     updateStmt.setString(1, OrderStatus.CANCELLED);
                     updateStmt.setString(2, reason);
                     updateStmt.setInt(3, orderId);
@@ -482,15 +484,18 @@ public class OrderDao {
     }
 
     public void updateOrderStatus(int orderId, String status, String paymentMethod, String paymentStatus, String transactionNote, String cancelReason) {
-        String sql = "UPDATE orders SET status = ?, payment_method = ?, payment_status = ?, transaction_note = ?, cancel_reason = ? WHERE id = ?";
+        String sql = "UPDATE orders SET status = ?, payment_method = ?, payment_status = ?, transaction_note = ?, cancel_reason = ?, confirmed_at = CASE WHEN (? IN ('Da thanh toan', 'Hoan thanh', 'paid', 'completed') OR ? IN ('DA_THANH_TOAN', 'paid', 'completed', 'Thanh toan thanh cong')) THEN COALESCE(confirmed_at, CURRENT_TIMESTAMP) ELSE NULL END WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String effectivePaymentStatus = paymentStatus == null || paymentStatus.isBlank() ? "CHUA_THANH_TOAN" : paymentStatus;
             stmt.setString(1, status);
             stmt.setString(2, paymentMethod == null || paymentMethod.isBlank() ? "COD" : paymentMethod);
-            stmt.setString(3, paymentStatus == null || paymentStatus.isBlank() ? "CHUA_THANH_TOAN" : paymentStatus);
+            stmt.setString(3, effectivePaymentStatus);
             stmt.setString(4, transactionNote);
             stmt.setString(5, cancelReason);
-            stmt.setInt(6, orderId);
+            stmt.setString(6, status);
+            stmt.setString(7, effectivePaymentStatus);
+            stmt.setInt(8, orderId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

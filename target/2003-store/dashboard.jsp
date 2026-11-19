@@ -79,45 +79,38 @@
             </header>
 
             <section class="stat-grid">
+                <% com._2003store.model.RevenueSummary todayRevenue = (com._2003store.model.RevenueSummary) request.getAttribute("todayRevenue"); %>
                 <article class="stat-card accent-blue">
                     <div class="stat-meta">
                         <p class="label">Doanh thu hôm nay</p>
                         <span class="icon-pill">↗</span>
                     </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayRevenue")) %>₫</p>
-                    <span class="trend">Dữ liệu thực tế</span>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(todayRevenue.getTotalRevenue()) %>₫</p>
+                    <span class="trend">Đơn thanh toán thành công</span>
                 </article>
                 <article class="stat-card accent-green">
                     <div class="stat-meta">
                         <p class="label">Đơn đã thanh toán</p>
                         <span class="icon-pill">✓</span>
                     </div>
-                    <p class="value">${totalOrders}</p>
-                    <span class="trend">Dữ liệu thực tế</span>
+                    <p class="value"><%= todayRevenue.getPaidOrders() %></p>
+                    <span class="trend">Trong ngày hôm nay</span>
                 </article>
                 <article class="stat-card accent-orange">
                     <div class="stat-meta">
                         <p class="label">Tiền mặt</p>
                         <span class="icon-pill">◔</span>
                     </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayCashRevenue")) %>₫</p>
-                    <span class="trend">Dữ liệu thực tế</span>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(todayRevenue.getCashRevenue()) %>₫</p>
+                    <span class="trend">COD trong ngày</span>
                 </article>
                 <article class="stat-card accent-purple">
                     <div class="stat-meta">
                         <p class="label">Chuyển khoản</p>
                         <span class="icon-pill">⬢</span>
                     </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayTransferRevenue")) %>₫</p>
-                    <span class="trend">Dữ liệu thực tế</span>
-                </article>
-                <article class="stat-card accent-blue">
-                    <div class="stat-meta">
-                        <p class="label">Tiền mặt + chuyển khoản</p>
-                        <span class="icon-pill">Σ</span>
-                    </div>
-                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((java.math.BigDecimal) request.getAttribute("todayCashAndTransferRevenue")) %>₫</p>
-                    <span class="trend">Tổng doanh thu hôm nay</span>
+                    <p class="value"><%= NumberFormat.getNumberInstance(new Locale("vi", "VN")).format(todayRevenue.getTransferRevenue()) %>₫</p>
+                    <span class="trend">Chuyển khoản và ví điện tử</span>
                 </article>
             </section>
 

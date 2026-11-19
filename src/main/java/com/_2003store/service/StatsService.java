@@ -3,6 +3,7 @@ package com._2003store.service;
 import com._2003store.dao.OrderDao;
 import com._2003store.dao.ProductDao;
 import com._2003store.model.Order;
+import com._2003store.model.RevenueSummary;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 public class StatsService {
     private final ProductDao productDao = new ProductDao();
     private final OrderDao orderDao = new OrderDao();
+    private final RevenueService revenueService = new RevenueService();
 
     public int getTotalProducts() {
         return productDao.countProducts();
@@ -49,24 +51,24 @@ public class StatsService {
         return orderDao.getRecentOrders();
     }
 
+    public RevenueSummary getTodayRevenueSummary() {
+        return revenueService.getTodaySummary();
+    }
+
     public BigDecimal getTodayRevenue() {
-        return getTodayCashRevenue().add(getTodayTransferRevenue());
+        return getTodayRevenueSummary().getTotalRevenue();
     }
 
     public BigDecimal getTodayCashRevenue() {
-        return orderDao.getRevenueByDateAndPaymentMethods(LocalDate.now().toString(), OrderStatus.CASH);
+        return getTodayRevenueSummary().getCashRevenue();
     }
 
     public BigDecimal getTodayTransferRevenue() {
-        return orderDao.getRevenueByDateAndPaymentMethods(
-                LocalDate.now().toString(),
-                OrderStatus.BANK_TRANSFER,
-                OrderStatus.MOMO
-        );
+        return getTodayRevenueSummary().getTransferRevenue();
     }
 
-    public BigDecimal getTodayCashAndTransferRevenue() {
-        return getTodayCashRevenue().add(getTodayTransferRevenue());
+    public int getTodayPaidOrdersCount() {
+        return getTodayRevenueSummary().getPaidOrders();
     }
 
     public BigDecimal getThisMonthRevenue() {

@@ -19,11 +19,13 @@ E:\Code java\src\main\java\com\_2003store\model\Supplier.java
 E:\Code java\src\main\java\com\_2003store\servlet\SupplierServlet.java
 E:\Code java\src\main\java\com\_2003store\model\WarehouseDetail.java
 E:\Code java\src\main\java\com\_2003store\dao\ReportDao.java
+E:\Code java\src\main\java\com\_2003store\dao\RevenueDao.java
 E:\Code java\src\main\java\com\_2003store\service\OrderStatus.java
 E:\Code java\src\main\java\com\_2003store\dao\SupplierDao.java
 E:\Code java\src\main\java\com\_2003store\dao\WarehouseDetailDao.java
 E:\Code java\src\main\java\com\_2003store\servlet\CustomerServlet.java
 E:\Code java\src\main\java\com\_2003store\dao\OrderDao.java
+E:\Code java\src\main\java\com\_2003store\model\RevenueSummary.java
 E:\Code java\src\main\java\com\_2003store\service\VietQrService.java
 E:\Code java\src\main\java\com\_2003store\servlet\StockIssueServlet.java
 E:\Code java\src\main\java\com\_2003store\model\RevenueDetail.java
@@ -41,6 +43,7 @@ E:\Code java\src\main\java\com\_2003store\servlet\InitServlet.java
 E:\Code java\src\main\java\com\_2003store\servlet\StockReceiptServlet.java
 E:\Code java\src\main\java\com\_2003store\model\OrderNotification.java
 E:\Code java\src\main\java\com\_2003store\servlet\InvoiceServlet.java
+E:\Code java\src\main\java\com\_2003store\service\RevenueService.java
 E:\Code java\src\main\java\com\_2003store\servlet\OrderServlet.java
 E:\Code java\src\main\java\com\_2003store\model\RevenuePoint.java
 E:\Code java\src\main\java\com\_2003store\dao\ProductDao.java
